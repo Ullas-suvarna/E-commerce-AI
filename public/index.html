@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>AI Return Intelligence | Production Preview</title>
+  
+  <!-- Google Fonts: Inter -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          colors: {
+            brand: {
+              50: "#eef2ff",
+              500: "#6366f1",
+              600: "#4f46e5",
+              700: "#4338ca",
+            },
+            slate: {
+              850: "#151e2e",
+              950: "#090d16",
+            }
+          },
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+  
+  <!-- Custom CSS for Glassmorphism & Micro-animations -->
+  <style>
+    body {
+      background-color: #090d16;
+      color: #f8fafc;
+      font-family: 'Inter', sans-serif;
+    }
+    .glass-panel {
+      background: rgba(15, 23, 42, 0.75);
+      backdrop-filter: blur(12px);
+      -webkit-backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+    }
+    .glass-card {
+      background: rgba(15, 23, 42, 0.65);
+      backdrop-filter: blur(12px);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+    .glass-card:hover {
+      background: rgba(30, 41, 59, 0.85);
+      border-color: rgba(99, 102, 241, 0.3);
+      transform: translateY(-2px);
+    }
+    .badge-critical { background: rgba(239, 68, 68, 0.15); color: #f87171; border: 1px solid rgba(239, 68, 68, 0.3); }
+    .badge-high { background: rgba(249, 115, 22, 0.15); color: #fb923c; border: 1px solid rgba(249, 115, 22, 0.3); }
+    .badge-medium { background: rgba(245, 158, 11, 0.15); color: #fbbf24; border: 1px solid rgba(245, 158, 11, 0.3); }
+    .badge-low { background: rgba(16, 185, 129, 0.15); color: #34d399; border: 1px solid rgba(16, 185, 129, 0.3); }
+    .badge-analyzed { background: rgba(99, 102, 241, 0.15); color: #818cf8; border: 1px solid rgba(99, 102, 241, 0.3); }
+    .badge-unanalyzed { background: rgba(148, 163, 184, 0.12); color: #cbd5e1; border: 1px solid rgba(148, 163, 184, 0.2); }
+    
+    /* Scrollbar */
+    ::-webkit-scrollbar { width: 6px; height: 6px; }
+    ::-webkit-scrollbar-track { background: #090d16; }
+    ::-webkit-scrollbar-thumb { background: #334155; border-radius: 4px; }
+  </style>
+</head>
+<body class="min-h-screen flex flex-col antialiased select-none">
+
+  <!-- Application Shell -->
+  <div class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar Navigation -->
+    <aside class="w-64 bg-slate-900/90 backdrop-blur-xl border-r border-slate-800 flex flex-col shrink-0">
+      <!-- Brand Logo Header -->
+      <div class="p-5 border-b border-slate-800 flex items-center space-x-3">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-tr from-indigo-600 via-indigo-500 to-cyan-400 flex items-center justify-center shadow-lg shadow-indigo-500/20">
+          <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+        </div>
+        <div>
+          <h1 class="font-bold text-white tracking-tight leading-none text-base">AI Return <span class="text-indigo-400">IQ</span></h1>
+          <span class="text-[11px] text-slate-400 font-medium">E-commerce Intelligence</span>
+        </div>
+      </div>
+
+      <!-- Navigation Tabs -->
+      <nav class="flex-1 p-3 space-y-1 overflow-y-auto">
+        <div class="px-3 pb-2 text-[10px] font-semibold text-slate-400 uppercase tracking-wider">Main Views</div>
+        
+        <button onclick="switchTab('dashboard')" id="nav-dashboard" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm transition bg-indigo-600/15 text-indigo-400 border border-indigo-500/30">
+          <div class="flex items-center space-x-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/></svg>
+            <span>Dashboard</span>
+          </div>
+        </button>
+
+        <button onclick="switchTab('returns')" id="nav-returns" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent transition">
+          <div class="flex items-center space-x-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+            <span>Return Records</span>
+          </div>
+          <span class="px-2 py-0.5 text-xs font-semibold bg-slate-800 text-slate-300 rounded-full border border-slate-700">8</span>
+        </button>
+
+        <button onclick="switchTab('products')" id="nav-products" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent transition">
+          <div class="flex items-center space-x-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+            <span>Products</span>
+          </div>
+        </button>
+
+        <button onclick="switchTab('analytics')" id="nav-analytics" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent transition">
+          <div class="flex items-center space-x-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+            <span>Analytics</span>
+          </div>
+        </button>
+
+        <button onclick="switchTab('ai-insights')" id="nav-ai-insights" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent transition">
+          <div class="flex items-center space-x-3">
+            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 3v4M3 5h4M6 17v4m-2-2h4m5-16l2.286 6.857L21 12l-5.714 2.143L13 21l-2.286-6.857L5 12l5.714-2.143L13 3z"/></svg>
+            <span>AI Insights</span>
+          </div>
+          <span class="px-1.5 py-0.5 text-[10px] font-bold bg-indigo-500/20 text-indigo-300 rounded border border-indigo-500/30">AI</span>
+        </button>
+
+        <button onclick="switchTab('settings')" id="nav-settings" class="w-full flex items-center justify-between px-3 py-2.5 rounded-xl font-medium text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800/60 border border-transparent transition">
+          <div class="flex items-center space-x-3">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/></svg>
+            <span>Settings</span>
+          </div>
+        </button>
+      </nav>
+
+      <!-- Spark Plan Badge -->
+      <div class="p-4 border-t border-slate-800">
+        <div class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 flex flex-col space-y-1">
+          <div class="flex items-center space-x-2 text-xs font-semibold text-emerald-400">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/></svg>
+            <span>Firebase Spark Plan</span>
+          </div>
+          <p class="text-[11px] text-slate-400">e-commerce-ai-13830 connected</p>
+        </div>
+      </div>
+    </aside>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <!-- Topbar Header -->
+      <header class="h-16 bg-slate-900/80 backdrop-blur-md border-b border-slate-800 px-8 flex items-center justify-between shrink-0">
+        <div class="relative w-80">
+          <svg class="w-4 h-4 text-slate-400 absolute left-3 top-1/2 -translate-y-1/2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+          <input type="text" id="globalSearch" placeholder="Search return ID, SKU, customer comment..." class="w-full pl-9 pr-4 py-1.5 bg-slate-950/80 border border-slate-800 rounded-xl text-xs text-slate-200 placeholder-slate-500 focus:outline-none focus:border-indigo-500/60 transition">
+        </div>
+
+        <div class="flex items-center space-x-3">
+          <button onclick="toggleModal(true)" class="flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 border border-indigo-500/30 text-xs font-semibold transition">
+            <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+            <span>Import CSV</span>
+          </button>
+
+          <div class="flex items-center space-x-2 p-1.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs text-slate-300">
+            <div class="w-7 h-7 rounded-lg bg-indigo-600/30 border border-indigo-500/40 flex items-center justify-center text-indigo-300 font-bold text-xs">A</div>
+            <span class="font-semibold text-slate-200">AeroCraft Commerce</span>
+          </div>
+        </div>
+      </header>
+
+      <!-- View Containers -->
+      <main class="flex-1 p-8 overflow-y-auto">
+
+        <!-- VIEW 1: DASHBOARD -->
+        <div id="view-dashboard" class="space-y-8">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-100 tracking-tight">Return Intelligence Dashboard</h1>
+            <p class="text-xs text-slate-400 mt-1">Real-time monitoring of customer returns, product risk flags, and operational cost impact</p>
+          </div>
+
+          <!-- KPI Summary Cards -->
+          <div class="grid grid-cols-1 md:grid-cols-4 gap-5">
+            <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-2">
+              <span class="text-xs font-semibold text-slate-400">Total Returns</span>
+              <div class="flex items-baseline space-x-2">
+                <span class="text-2xl font-bold text-slate-100">8</span>
+                <span class="text-xs text-emerald-400">+12%</span>
+              </div>
+              <p class="text-[11px] text-slate-400">Across all catalog items</p>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-2">
+              <span class="text-xs font-semibold text-slate-400">Refund Cost Impact</span>
+              <div class="text-2xl font-bold text-slate-100">$1,167.45</div>
+              <p class="text-[11px] text-slate-400">Estimated refund value</p>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-2">
+              <span class="text-xs font-semibold text-slate-400">High / Critical Severity</span>
+              <div class="text-2xl font-bold text-amber-400">5 <span class="text-xs font-normal text-slate-400">records</span></div>
+              <p class="text-[11px] text-slate-400">Require factory review</p>
+            </div>
+
+            <div class="glass-panel p-5 rounded-2xl border border-slate-800 space-y-2">
+              <span class="text-xs font-semibold text-slate-400">Analyzed Coverage</span>
+              <div class="text-2xl font-bold text-cyan-300">63%</div>
+              <p class="text-[11px] text-slate-400">Processed by AI categorization</p>
+            </div>
+          </div>
+
+          <!-- Grid Section -->
+          <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            <div class="lg:col-span-2 space-y-6">
+              <!-- Problematic Products -->
+              <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+                <div class="flex items-center justify-between">
+                  <h3 class="text-sm font-bold text-slate-100">Top Problematic Products</h3>
+                  <button onclick="switchTab('products')" class="text-xs text-indigo-400 hover:underline">View All</button>
+                </div>
+
+                <div class="space-y-3">
+                  <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between">
+                    <div>
+                      <h4 class="text-xs font-bold text-slate-200">Pro Acoustic Wireless Headphones</h4>
+                      <p class="text-[11px] text-amber-400 mt-1">Cause: Left Cup Hardware & Charging Defect</p>
+                    </div>
+                    <div class="text-right">
+                      <span class="text-xs font-bold text-rose-400">9.05% Return Rate</span>
+                      <span class="block text-[10px] px-2 py-0.5 rounded-full badge-critical font-semibold mt-1">Critical Issue</span>
+                    </div>
+                  </div>
+
+                  <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800/80 flex items-center justify-between">
+                    <div>
+                      <h4 class="text-xs font-bold text-slate-200">Precision Espresso Drip Machine</h4>
+                      <p class="text-[11px] text-amber-400 mt-1">Cause: Packaging Transit Damage</p>
+                    </div>
+                    <div class="text-right">
+                      <span class="text-xs font-bold text-rose-400">7.50% Return Rate</span>
+                      <span class="block text-[10px] px-2 py-0.5 rounded-full badge-high font-semibold mt-1">High Risk</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Recent Returns -->
+            <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+              <div class="flex items-center justify-between">
+                <h3 class="text-sm font-bold text-slate-100">Recent Customer Returns</h3>
+                <button onclick="switchTab('returns')" class="text-xs text-indigo-400 hover:underline">View All</button>
+              </div>
+
+              <div class="space-y-3">
+                <div class="p-3 rounded-xl bg-slate-950/50 border border-slate-800 text-xs space-y-1">
+                  <div class="flex justify-between font-mono text-indigo-400 font-bold">
+                    <span>RET-8921</span>
+                    <span class="text-slate-500 text-[11px]">2026-08-28</span>
+                  </div>
+                  <p class="font-semibold text-slate-200">Pro Acoustic Wireless Headphones</p>
+                  <p class="text-[11px] text-slate-400 italic">&quot;Left earbud stopped charging after 3 days...&quot;</p>
+                </div>
+
+                <div class="p-3 rounded-xl bg-slate-950/50 border border-slate-800 text-xs space-y-1">
+                  <div class="flex justify-between font-mono text-indigo-400 font-bold">
+                    <span>RET-8922</span>
+                    <span class="text-slate-500 text-[11px]">2026-08-27</span>
+                  </div>
+                  <p class="font-semibold text-slate-200">Ultra-Soft Organic Cotton Hoodie</p>
+                  <p class="text-[11px] text-slate-400 italic">&quot;Medium fits like a Small. Sleeves are short...&quot;</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 2: RETURN RECORDS TABLE -->
+        <div id="view-returns" class="space-y-6 hidden">
+          <div class="flex justify-between items-center">
+            <div>
+              <h1 class="text-2xl font-bold text-slate-100 tracking-tight">Product Return Records</h1>
+              <p class="text-xs text-slate-400 mt-1">Browse, filter, import CSV, and inspect customer comments</p>
+            </div>
+            <button onclick="toggleModal(true)" class="flex items-center space-x-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-semibold text-xs shadow transition">
+              <span>Import CSV Data</span>
+            </button>
+          </div>
+
+          <div class="glass-panel rounded-2xl border border-slate-800 overflow-hidden">
+            <table class="w-full text-left text-xs text-slate-300">
+              <thead class="bg-slate-950/80 text-slate-400 font-semibold border-b border-slate-800">
+                <tr>
+                  <th class="p-3.5">ID / Order</th>
+                  <th class="p-3.5">Product</th>
+                  <th class="p-3.5">Customer Comment</th>
+                  <th class="p-3.5">Reason</th>
+                  <th class="p-3.5">Severity</th>
+                  <th class="p-3.5">Status</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-slate-800/60">
+                <tr>
+                  <td class="p-3.5 font-mono text-indigo-300 font-bold">RET-8921<br><span class="text-slate-500 text-[10px]">ORD-10492</span></td>
+                  <td class="p-3.5 font-semibold text-slate-200">Pro Acoustic Headphones<br><span class="text-slate-400 text-[10px] font-mono">AUDIO-PRO-BLK</span></td>
+                  <td class="p-3.5 italic text-slate-300">&quot;Left earbud stopped charging after 3 days. Battery light stays red.&quot;</td>
+                  <td class="p-3.5">Defect / Hardware</td>
+                  <td class="p-3.5"><span class="px-2 py-0.5 rounded-full badge-high font-bold">High</span></td>
+                  <td class="p-3.5"><span class="px-2 py-0.5 rounded-full badge-analyzed font-semibold">Analyzed</span></td>
+                </tr>
+                <tr>
+                  <td class="p-3.5 font-mono text-indigo-300 font-bold">RET-8922<br><span class="text-slate-500 text-[10px]">ORD-10488</span></td>
+                  <td class="p-3.5 font-semibold text-slate-200">Cotton Hoodie (Medium)<br><span class="text-slate-400 text-[10px] font-mono">APPAREL-FIT-M</span></td>
+                  <td class="p-3.5 italic text-slate-300">&quot;Fabric quality is great, but Medium fits like a Small.&quot;</td>
+                  <td class="p-3.5">Sizing Issue</td>
+                  <td class="p-3.5"><span class="px-2 py-0.5 rounded-full badge-medium font-bold">Medium</span></td>
+                  <td class="p-3.5"><span class="px-2 py-0.5 rounded-full badge-analyzed font-semibold">Analyzed</span></td>
+                </tr>
+                <tr>
+                  <td class="p-3.5 font-mono text-indigo-300 font-bold">RET-8923<br><span class="text-slate-500 text-[10px]">ORD-10475</span></td>
+                  <td class="p-3.5 font-semibold text-slate-200">Precision Espresso Machine<br><span class="text-slate-400 text-[10px] font-mono">HOME-COFFEE-BAR</span></td>
+                  <td class="p-3.5 italic text-slate-300">&quot;Glass carafe arrived completely shattered inside box.&quot;</td>
+                  <td class="p-3.5">Damaged in Transit</td>
+                  <td class="p-3.5"><span class="px-2 py-0.5 rounded-full badge-critical font-bold">Critical</span></td>
+                  <td class="p-3.5"><span class="px-2 py-0.5 rounded-full badge-analyzed font-semibold">Analyzed</span></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- VIEW 3: PRODUCTS -->
+        <div id="view-products" class="space-y-6 hidden">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-100 tracking-tight">Product Health Leaderboard</h1>
+            <p class="text-xs text-slate-400 mt-1">Identify problematic SKUs with elevated return rates</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-mono text-indigo-400 font-bold">AUDIO-PRO-BLK</span>
+                <span class="px-2 py-0.5 rounded-full badge-critical font-bold text-[10px]">Critical Issue</span>
+              </div>
+              <h3 class="font-bold text-sm text-slate-100">Pro Acoustic Wireless Headphones</h3>
+              <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
+                <span class="text-[10px] text-slate-500 uppercase font-semibold">Top Return Reason</span>
+                <p class="text-amber-300 font-medium mt-0.5">Left Cup Hardware Defect</p>
+              </div>
+              <div class="pt-2 border-t border-slate-800 flex justify-between text-xs">
+                <span>Returns: <strong>38</strong></span>
+                <span class="text-rose-400 font-bold">9.05% Return Rate</span>
+              </div>
+            </div>
+
+            <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+              <div class="flex justify-between items-start">
+                <span class="text-xs font-mono text-indigo-400 font-bold">HOME-COFFEE-BAR</span>
+                <span class="px-2 py-0.5 rounded-full badge-high font-bold text-[10px]">High Risk</span>
+              </div>
+              <h3 class="font-bold text-sm text-slate-100">Precision Espresso Drip Machine</h3>
+              <div class="p-3 rounded-xl bg-slate-950/60 border border-slate-800 text-xs">
+                <span class="text-[10px] text-slate-500 uppercase font-semibold">Top Return Reason</span>
+                <p class="text-amber-300 font-medium mt-0.5">Packaging Transit Damage</p>
+              </div>
+              <div class="pt-2 border-t border-slate-800 flex justify-between text-xs">
+                <span>Returns: <strong>21</strong></span>
+                <span class="text-rose-400 font-bold">7.50% Return Rate</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 4: ANALYTICS -->
+        <div id="view-analytics" class="space-y-6 hidden">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-100 tracking-tight">Return Analytics Suite</h1>
+            <p class="text-xs text-slate-400 mt-1">Visual distribution of return categories and financial impact</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div class="glass-panel p-6 rounded-2xl border border-slate-800 space-y-4">
+              <h3 class="text-sm font-bold text-slate-100">Return Reasons Breakdown</h3>
+              <div class="space-y-3 pt-2">
+                <div>
+                  <div class="flex justify-between text-xs mb-1"><span>Defect / Hardware</span><span class="font-bold">42%</span></div>
+                  <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-indigo-500 h-full w-[42%]"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1"><span>Sizing Issue</span><span class="font-bold">28%</span></div>
+                  <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-cyan-400 h-full w-[28%]"></div></div>
+                </div>
+                <div>
+                  <div class="flex justify-between text-xs mb-1"><span>Damaged in Transit</span><span class="font-bold">18%</span></div>
+                  <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden"><div class="bg-rose-400 h-full w-[18%]"></div></div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 5: AI INSIGHTS -->
+        <div id="view-ai-insights" class="space-y-6 hidden">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-100 tracking-tight">AI Return Intelligence & Patterns</h1>
+            <p class="text-xs text-slate-400 mt-1">Firebase AI Logic client-side pattern clusters & recommendation feed</p>
+          </div>
+
+          <div class="glass-panel p-6 rounded-3xl border border-indigo-500/30 bg-indigo-950/20 space-y-4">
+            <div class="flex justify-between items-center">
+              <span class="px-2.5 py-1 rounded-full badge-critical text-xs font-bold">Critical Severity Pattern</span>
+              <span class="text-xs text-slate-400">Est. Impact: <strong class="text-rose-400">$5,319.72</strong></span>
+            </div>
+
+            <h3 class="text-base font-bold text-slate-100">Left Cup Power Failure & Disconnect in Wireless Headphones</h3>
+            <p class="text-xs text-slate-300 leading-relaxed bg-slate-950/60 p-4 rounded-xl border border-slate-800">
+              Multiple customer reports highlight left earbud charging pin misalignment and Bluetooth dropouts after 2-5 days of use.
+            </p>
+
+            <div class="space-y-2 pt-2">
+              <h4 class="text-xs font-bold text-emerald-400 uppercase tracking-wider">Recommended Actions</h4>
+              <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-200">
+                ✓ Halt shipment for batch serial range #402-0000 to #402-1500.
+              </div>
+              <div class="p-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs text-slate-200">
+                ✓ Issue factory quality alert to plant manager.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- VIEW 6: SETTINGS -->
+        <div id="view-settings" class="space-y-6 hidden">
+          <div>
+            <h1 class="text-2xl font-bold text-slate-100 tracking-tight">Store & System Settings</h1>
+            <p class="text-xs text-slate-400 mt-1">Firebase Spark project configuration and data settings</p>
+          </div>
+
+          <div class="glass-panel p-6 rounded-2xl border border-emerald-500/30 bg-emerald-950/10 space-y-4">
+            <h3 class="text-sm font-bold text-emerald-300">Firebase Spark Compliance Checklist</h3>
+            <div class="grid grid-cols-2 gap-3 text-xs">
+              <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">✓ Firebase Auth & Cloud Firestore Connected</div>
+              <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">✓ Project ID: e-commerce-ai-13830</div>
+              <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">✓ Zero Cloud Functions or Paid APIs</div>
+              <div class="p-3 bg-slate-950/60 rounded-xl border border-slate-800">✓ Security Rules Active (`firestore.rules`)</div>
+            </div>
+          </div>
+        </div>
+
+      </main>
+    </div>
+  </div>
+
+  <!-- CSV Import Modal Preview -->
+  <div id="importModal" class="fixed inset-0 bg-slate-950/80 backdrop-blur-md flex items-center justify-center p-4 hidden z-50">
+    <div class="bg-slate-900 border border-slate-800 rounded-3xl max-w-lg w-full p-6 space-y-5 shadow-2xl">
+      <div class="flex justify-between items-center border-b border-slate-800 pb-4">
+        <h3 class="font-bold text-base text-slate-100">Import Return CSV</h3>
+        <button onclick="toggleModal(false)" class="text-slate-400 hover:text-white">&times;</button>
+      </div>
+
+      <div class="border-2 border-dashed border-slate-700 p-8 rounded-2xl text-center bg-slate-950/50 space-y-2">
+        <svg class="w-10 h-10 text-indigo-400 mx-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12"/></svg>
+        <p class="text-xs font-bold text-slate-200">Drag & Drop Return CSV File Here</p>
+        <p class="text-[11px] text-slate-500">Supported columns: Order ID, SKU, Product Name, Category, Price, Return Date, Reason, Customer Comment</p>
+      </div>
+
+      <div class="flex justify-end space-x-3 pt-2">
+        <button onclick="toggleModal(false)" class="px-4 py-2 rounded-xl text-xs font-semibold text-slate-400 hover:bg-slate-800">Cancel</button>
+        <button onclick="toggleModal(false)" class="px-4 py-2 rounded-xl bg-indigo-600 text-white text-xs font-semibold shadow">Import File</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    function switchTab(tabId) {
+      const views = ['dashboard', 'returns', 'products', 'analytics', 'ai-insights', 'settings'];
+      views.forEach(v => {
+        const viewEl = document.getElementById(`view-${v}`);
+        const navEl = document.getElementById(`nav-${v}`);
+        if (viewEl) viewEl.classList.add('hidden');
+        if (navEl) {
+          navEl.classList.remove('bg-indigo-600/15', 'text-indigo-400', 'border-indigo-500/30');
+          navEl.classList.add('text-slate-400', 'border-transparent');
+        }
+      });
+
+      const activeView = document.getElementById(`view-${tabId}`);
+      const activeNav = document.getElementById(`nav-${tabId}`);
+      if (activeView) activeView.classList.remove('hidden');
+      if (activeNav) {
+        activeNav.classList.add('bg-indigo-600/15', 'text-indigo-400', 'border-indigo-500/30');
+        activeNav.classList.remove('text-slate-400', 'border-transparent');
+      }
+    }
+
+    function toggleModal(show) {
+      const modal = document.getElementById('importModal');
+      if (show) modal.classList.remove('hidden');
+      else modal.classList.add('hidden');
+    }
+  </script>
+</body>
+</html>

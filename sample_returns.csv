@@ -1,0 +1,11 @@
+returnId,productName,category,customerName,rating,comment,price,refundAmount,status,severity,reasonCategory,returnDate
+RET-9001,Running Shoes X,Apparel & Fashion,Alex Rivera,1,"Shoe size 9 feels like size 8. Very tight toe box and caused blisters on my first run.",129.99,129.99,Pending AI Analysis,High,Size/Fit,2026-08-28
+RET-9002,Wireless Ergonomic Mouse,Electronics & Tech,Sarah Jenkins,2,"Mouse scroll wheel stopped working after 3 days of light office use. Cursor lags intermittently.",49.99,49.99,Pending AI Analysis,Medium,Product Quality,2026-08-27
+RET-9003,Stainless Steel Water Bottle,Home & Kitchen,David Chen,1,"Lid seal leaks water when tilted upside down. Rubber gasket inside cap was missing upon arrival.",24.50,24.50,Pending AI Analysis,High,Damaged Product,2026-08-27
+RET-9004,Noise Canceling Headphones Pro,Electronics & Tech,Emily Taylor,2,"Left ear cup audio completely cut out after 1 week. Active noise cancellation introduces static buzz.",199.99,199.99,Pending AI Analysis,Critical,Product Quality,2026-08-26
+RET-9005,Organic Cotton T-Shirt,Apparel & Fashion,Michael Brown,3,"Color faded significantly after first cold wash cycle. Fabric feels thinner than described.",34.00,34.00,Pending AI Analysis,Low,Color/Appearance,2026-08-26
+RET-9006,Chef Kitchen Knife 8-Inch,Home & Kitchen,Jessica Martinez,1,"Blade edge arrived chipped out of the box. Handle wooden grip was loose and wobbling.",79.99,79.99,Pending AI Analysis,Critical,Damaged Product,2026-08-25
+RET-9007,Bluetooth Smart Watch V2,Electronics & Tech,Robert Wilson,2,"Battery drains from 100% to 0% in under 4 hours even with screen brightness dimmed down.",149.95,149.95,Pending AI Analysis,High,Product Quality,2026-08-25
+RET-9008,Slim Fit Denim Jeans,Apparel & Fashion,Amanda White,2,"Waist measurement is 2 inches smaller than standard sizing chart. Zipper gets stuck easily.",65.00,65.00,Pending AI Analysis,Medium,Size/Fit,2026-08-24
+RET-9009,Ceramic Nonstick Frying Pan,Home & Kitchen,Brian Miller,1,"Nonstick coating started peeling off into food during second light stir fry cook.",55.00,55.00,Pending AI Analysis,High,Product Quality,2026-08-24
+RET-90010,USB-C Multiport Hub,Electronics & Tech,Olivia Davis,1,"HDMI port fails to output 4K video signal to external monitor. Power delivery port overheats.",39.99,39.99,Pending AI Analysis,High,Compatibility,2026-08-23
