@@ -19,19 +19,19 @@ export const EmptyState: React.FC<EmptyStateProps> = ({
   icon: Icon = Inbox,
 }) => {
   return (
-    <div className="glass-panel rounded-2xl p-10 text-center flex flex-col items-center justify-center my-6 border border-slate-200">
+    <div className="glass-panel rounded-2xl p-10 text-center flex flex-col items-center justify-center my-6 border border-slate-300">
       <div className="w-16 h-16 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center mb-4 text-indigo-600">
         <Icon className="w-8 h-8" />
       </div>
-      <h3 className="text-lg font-bold text-slate-900">{title}</h3>
-      <p className="text-sm text-slate-500 max-w-md mt-1 mb-6 leading-relaxed">{description}</p>
+      <h3 className="text-xl font-extrabold text-slate-900">{title}</h3>
+      <p className="text-base text-slate-600 max-w-md mt-1 mb-6 leading-relaxed font-medium">{description}</p>
       {actionText && onAction && (
         <button
           onClick={onAction}
-          className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-medium text-xs shadow-lg shadow-indigo-600/25 transition"
+          className="inline-flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-lg shadow-indigo-600/25 transition"
         >
           <span>{actionText}</span>
-          <ArrowRight className="w-3.5 h-3.5" />
+          <ArrowRight className="w-4 h-4" />
         </button>
       )}
     </div>
@@ -56,14 +56,14 @@ export const ErrorState: React.FC<ErrorStateProps> = ({
           <AlertCircle className="w-5 h-5" />
         </div>
         <div>
-          <h4 className="text-sm font-bold text-rose-900">{title}</h4>
-          <p className="text-xs text-rose-700/80 mt-0.5">{message}</p>
+          <h4 className="text-base font-bold text-rose-900">{title}</h4>
+          <p className="text-sm text-rose-700 mt-0.5 font-medium">{message}</p>
         </div>
       </div>
       {onRetry && (
         <button
           onClick={onRetry}
-          className="inline-flex items-center space-x-2 px-3.5 py-1.5 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-700 text-xs font-semibold border border-rose-200 transition shrink-0"
+          className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-800 text-xs font-bold border border-rose-200 transition shrink-0"
         >
           <RefreshCw className="w-3.5 h-3.5" />
           <span>Try Again</span>

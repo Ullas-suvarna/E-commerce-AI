@@ -11,6 +11,7 @@ import {
   deleteFirestoreReturn,
   batchImportFirestoreReturns,
   seedInitialUserDataIfEmpty,
+  clearAllFirestoreReturns,
 } from '@/lib/firestoreService';
 
 export interface SummaryMetrics {
@@ -230,17 +231,25 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   }, [user]);
 
   const addReturnRecord = async (record: Omit<ReturnRecord, 'id'>) => {
+    const uid = user?.uid;
+    const clearedKey = getUserClearedKey(uid);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(clearedKey);
+      } catch (e) {}
+    }
+
     const newId = `RET-${Math.floor(1000 + Math.random() * 9000)}`;
     const newRecord: ReturnRecord = { ...record, id: newId };
 
     setReturns((prev) => {
       const updated = [newRecord, ...prev];
-      saveToStorage(updated);
+      saveToStorage(updated, uid);
       return updated;
     });
 
     try {
-      await addFirestoreReturn(user?.uid || 'demo-user-spark', record);
+      await addFirestoreReturn(uid || 'demo-user-spark', record);
       showToast('success', 'Return Saved to Firestore', `Return record saved to Cloud Firestore (${newId}).`);
     } catch (err: any) {
       showToast('success', 'Return Saved Workspace', `Return ${newId} saved to workspace.`);
@@ -250,7 +259,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const updateReturnRecord = async (id: string, updatedData: Partial<ReturnRecord>) => {
     setReturns((prev) => {
       const updated = prev.map((r) => (r.id === id ? { ...r, ...updatedData } : r));
-      saveToStorage(updated);
+      saveToStorage(updated, user?.uid);
       return updated;
     });
 
@@ -263,22 +272,41 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const importCsvRecords = async (newRecords: (Omit<ReturnRecord, 'id'> & { id?: string })[]) => {
+    const uid = user?.uid;
+    const clearedKey = getUserClearedKey(uid);
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(clearedKey);
+      } catch (e) {}
+    }
+
     const preparedRecords: ReturnRecord[] = newRecords.map((r, idx) => ({
       ...r,
       id: r.id || `RET-${Math.floor(2000 + Math.random() * 8000 + idx)}`,
     }));
 
+    // Reset filters to ensure imported records are immediately visible
+    setFilterState({
+      searchQuery: '',
+      status: 'all',
+      severity: 'all',
+      category: 'all',
+      dateRange: 'all',
+    });
+
     let updatedDataset: ReturnRecord[] = [];
     setReturns((prev) => {
-      const existingIds = new Set(prev.map((r) => r.id.toLowerCase()));
-      const uniqueNew = preparedRecords.filter((r) => !existingIds.has(r.id.toLowerCase()));
-      updatedDataset = [...uniqueNew, ...prev];
-      saveToStorage(updatedDataset);
+      const existingMap = new Map(prev.map((r) => [r.id.toLowerCase(), r]));
+      preparedRecords.forEach((r) => {
+        existingMap.set(r.id.toLowerCase(), r);
+      });
+      updatedDataset = Array.from(existingMap.values());
+      saveToStorage(updatedDataset, uid);
       return updatedDataset;
     });
 
     try {
-      const count = await batchImportFirestoreReturns(user?.uid || 'demo-user-spark', preparedRecords);
+      const count = await batchImportFirestoreReturns(uid || 'demo-user-spark', preparedRecords);
       showToast('success', 'CSV Sync Complete', `Saved ${count} records to Cloud Firestore.`);
     } catch (err: any) {
       showToast('success', 'CSV Sync Complete', `Saved ${preparedRecords.length} records to workspace.`);
@@ -340,7 +368,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     showToast('success', 'Data Reset', 'Restored sample return records for your account.');
   };
 
-  const clearAllReturns = () => {
+  const clearAllReturns = async () => {
     const uid = user?.uid;
     const storageKey = getUserStorageKey(uid);
     const clearedKey = getUserClearedKey(uid);
@@ -349,6 +377,11 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       try {
         localStorage.setItem(clearedKey, 'true');
         localStorage.removeItem(storageKey);
+      } catch (e) {}
+    }
+    if (uid && uid !== 'demo-user-spark') {
+      try {
+        await clearAllFirestoreReturns(uid);
       } catch (e) {}
     }
     showToast('info', 'Dataset Cleared', 'All return records have been permanently cleared from workspace.');

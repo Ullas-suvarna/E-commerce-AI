@@ -128,7 +128,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
 
     rawRows.forEach((row, idx) => {
       const rowNum = idx + 2;
-      const returnId = (row['returnId'] || '').toString().trim();
+      let rawReturnId = (row['returnId'] || '').toString().trim();
       const productName = (row['productName'] || '').toString().trim();
       const category = (row['category'] || 'General').toString().trim();
       const customerName = (row['customerName'] || 'Anonymous Customer').toString().trim();
@@ -154,10 +154,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
       let isValid = true;
       let errorReason = '';
 
-      if (!returnId) {
-        isValid = false;
-        errorReason = 'Missing returnId';
-      } else if (!productName) {
+      if (!productName) {
         isValid = false;
         errorReason = 'Missing productName';
       } else if (!category) {
@@ -169,21 +166,21 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
       } else if (!comment) {
         isValid = false;
         errorReason = 'Missing comment';
-      } else if (seenInFileIds.has(returnId.toLowerCase())) {
-        isValid = false;
-        errorReason = `Duplicate returnId "${returnId}" inside CSV file`;
-      } else if (existingIds.has(returnId.toLowerCase())) {
-        isValid = false;
-        errorReason = `Duplicate returnId "${returnId}" already exists in store database`;
       }
 
-      if (returnId) {
-        seenInFileIds.add(returnId.toLowerCase());
+      // Auto-assign ID if missing or colliding
+      let returnId = rawReturnId;
+      if (!returnId) {
+        returnId = `RET-IMP-${rowNum}-${Math.floor(100 + Math.random() * 900)}`;
+      } else if (seenInFileIds.has(returnId.toLowerCase()) || existingIds.has(returnId.toLowerCase())) {
+        returnId = `${returnId}-IMP-${Math.floor(100 + Math.random() * 900)}`;
       }
+
+      seenInFileIds.add(returnId.toLowerCase());
 
       const parsedRow: ParsedCsvRow = {
         rowNum,
-        returnId: returnId || `RET-AUTO-${rowNum}`,
+        returnId,
         orderId,
         sku,
         productName: productName || 'Unknown Product',
@@ -216,7 +213,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
   const handleConfirmImport = async () => {
     if (validRows.length === 0) return;
     setIsProcessing(true);
-    setProgress(10);
+    setProgress(20);
 
     const recordsToSave: ReturnRecord[] = validRows.map((r) => ({
       id: r.returnId,
@@ -234,19 +231,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
     }));
 
     try {
-      if (user && user.uid !== 'demo-user-spark') {
-        try {
-          await batchImportFirestoreReturns(user.uid, recordsToSave, (pct) => {
-            setProgress(pct);
-          });
-        } catch (fsErr) {
-          console.warn('Firestore write permission restricted, using local state sync');
-          await importCsvRecords(recordsToSave);
-        }
-      } else {
-        await importCsvRecords(recordsToSave);
-      }
-
+      await importCsvRecords(recordsToSave);
       setIsProcessing(false);
       setProgress(100);
       setImportSummary({
@@ -260,8 +245,8 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
         `Successfully imported ${validRows.length} valid return records.`
       );
     } catch (err: any) {
+      console.error('Import error:', err);
       setIsProcessing(false);
-      await importCsvRecords(recordsToSave);
       setImportSummary({
         successCount: validRows.length,
         failedCount: invalidRows.length,
@@ -280,26 +265,26 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
 
   return (
     <div className="fixed inset-0 z-50 bg-slate-900/40 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-white w-full max-w-3xl rounded-3xl border border-slate-200 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-scale-up">
+      <div className="bg-white w-full max-w-3xl rounded-3xl border border-slate-300 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] animate-scale-up">
         {/* Header */}
         <div className="p-5 border-b border-slate-200 flex items-center justify-between">
           <div className="flex items-center space-x-3">
-            <div className="w-10 h-10 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
-              <FileSpreadsheet className="w-5 h-5" />
+            <div className="w-11 h-11 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600">
+              <FileSpreadsheet className="w-6 h-6" />
             </div>
             <div>
-              <h2 className="text-base font-bold text-slate-900">Local CSV Import Engine</h2>
-              <p className="text-xs text-slate-500">Zero external upload • 100% Client-side validation</p>
+              <h2 className="text-lg font-extrabold text-slate-900">Local CSV Import Engine</h2>
+              <p className="text-sm font-medium text-slate-500">Zero external upload • 100% Client-side validation</p>
             </div>
           </div>
 
           <div className="flex items-center space-x-2">
             <button
               onClick={downloadSampleCsv}
-              className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 text-xs font-semibold border border-slate-200 transition"
+              className="flex items-center space-x-1.5 px-3.5 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-800 text-sm font-bold border border-slate-300 transition"
               title="Download formatted sample CSV file"
             >
-              <Download className="w-3.5 h-3.5 text-indigo-600" />
+              <Download className="w-4 h-4 text-indigo-600" />
               <span>Sample CSV</span>
             </button>
 
@@ -327,14 +312,14 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
                   handleFileSelect(e.dataTransfer.files[0]);
                 }
               }}
-              className="border-2 border-dashed border-slate-200 hover:border-indigo-400 rounded-2xl p-8 text-center space-y-3 bg-slate-50/50 transition cursor-pointer group"
+              className="border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-2xl p-8 text-center space-y-3 bg-slate-50/50 transition cursor-pointer group"
             >
               <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                 <Upload className="w-6 h-6" />
               </div>
 
               <div>
-                <p className="text-xs font-semibold text-slate-800">
+                <p className="text-sm font-bold text-slate-800">
                   Drag & drop your return CSV file here, or{' '}
                   <label className="text-indigo-600 hover:underline cursor-pointer">
                     browse
@@ -346,8 +331,8 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
                     />
                   </label>
                 </p>
-                <p className="text-[11px] text-slate-500 mt-1">
-                  Required columns: <code className="text-indigo-700 font-mono font-semibold">returnId, productName, category, customerName, rating, comment</code>
+                <p className="text-xs text-slate-500 font-medium mt-1">
+                  Required columns: <code className="text-indigo-700 font-mono font-bold">returnId, productName, category, customerName, rating, comment</code>
                 </p>
               </div>
             </div>
@@ -355,11 +340,11 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
 
           {/* Header Error Banner */}
           {headerError && (
-            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-start space-x-3 text-xs text-rose-900">
+            <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 flex items-start space-x-3 text-sm text-rose-900">
               <ShieldAlert className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
               <div>
                 <h4 className="font-bold">CSV Validation Alert</h4>
-                <p className="mt-0.5 leading-relaxed text-rose-700">{headerError}</p>
+                <p className="mt-0.5 leading-relaxed text-rose-700 text-sm">{headerError}</p>
               </div>
             </div>
           )}
@@ -368,13 +353,13 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
           {file && !importSummary && (
             <div className="space-y-4">
               {/* File Info Bar */}
-              <div className="flex items-center justify-between p-3 rounded-xl bg-slate-50 border border-slate-200 text-xs">
-                <div className="flex items-center space-x-2 font-mono text-slate-700 truncate">
+              <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-50 border border-slate-300 text-sm">
+                <div className="flex items-center space-x-2 font-mono text-slate-800 font-bold truncate">
                   <FileSpreadsheet className="w-4 h-4 text-indigo-600 shrink-0" />
                   <span className="truncate">{file.name}</span>
-                  <span className="text-slate-400">({(file.size / 1024).toFixed(1)} KB)</span>
+                  <span className="text-slate-400 font-normal">({(file.size / 1024).toFixed(1)} KB)</span>
                 </div>
-                <button onClick={handleReset} className="text-rose-600 text-xs font-semibold hover:underline">
+                <button onClick={handleReset} className="text-rose-600 text-sm font-bold hover:underline">
                   Change File
                 </button>
               </div>
@@ -383,7 +368,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
               <div className="flex border-b border-slate-200 space-x-4">
                 <button
                   onClick={() => setActiveTab('valid')}
-                  className={`pb-2.5 text-xs font-bold transition border-b-2 flex items-center space-x-2 ${
+                  className={`pb-2.5 text-sm font-extrabold transition border-b-2 flex items-center space-x-2 ${
                     activeTab === 'valid'
                       ? 'border-emerald-600 text-emerald-700'
                       : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -395,7 +380,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
 
                 <button
                   onClick={() => setActiveTab('invalid')}
-                  className={`pb-2.5 text-xs font-bold transition border-b-2 flex items-center space-x-2 ${
+                  className={`pb-2.5 text-sm font-extrabold transition border-b-2 flex items-center space-x-2 ${
                     activeTab === 'invalid'
                       ? 'border-rose-600 text-rose-700'
                       : 'border-transparent text-slate-500 hover:text-slate-800'
@@ -407,55 +392,55 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
               </div>
 
               {/* Table Render */}
-              <div className="max-h-60 overflow-y-auto overflow-x-auto rounded-2xl border border-slate-200">
+              <div className="max-h-60 overflow-y-auto overflow-x-auto rounded-2xl border border-slate-300">
                 {activeTab === 'valid' ? (
                   validRows.length === 0 ? (
-                    <div className="p-8 text-center text-xs text-slate-500">No valid rows found in this CSV file.</div>
+                    <div className="p-8 text-center text-sm text-slate-500">No valid rows found in this CSV file.</div>
                   ) : (
-                    <table className="w-full text-left text-xs text-slate-700">
-                      <thead className="bg-slate-100 sticky top-0 text-[11px] font-semibold text-slate-500 border-b border-slate-200">
+                    <table className="w-full text-left text-sm text-slate-700">
+                      <thead className="bg-slate-100 sticky top-0 text-xs font-bold text-slate-600 border-b border-slate-200 uppercase tracking-wider">
                         <tr>
-                          <th className="p-2.5">ID</th>
-                          <th className="p-2.5">Product</th>
-                          <th className="p-2.5">Category</th>
-                          <th className="p-2.5">Customer</th>
-                          <th className="p-2.5">Rating</th>
-                          <th className="p-2.5">Comment</th>
+                          <th className="p-3">ID</th>
+                          <th className="p-3">Product</th>
+                          <th className="p-3">Category</th>
+                          <th className="p-3">Customer</th>
+                          <th className="p-3">Rating</th>
+                          <th className="p-3">Comment</th>
                         </tr>
                       </thead>
                       <tbody className="divide-y divide-slate-200 bg-white">
                         {validRows.map((r) => (
                           <tr key={r.rowNum} className="hover:bg-slate-50">
-                            <td className="p-2.5 font-mono text-indigo-600 font-bold">{r.returnId}</td>
-                            <td className="p-2.5 truncate max-w-[140px] text-slate-900 font-medium">{r.productName}</td>
-                            <td className="p-2.5 text-slate-500">{r.category}</td>
-                            <td className="p-2.5 text-slate-700">{r.customerName}</td>
-                            <td className="p-2.5 font-bold text-amber-600">★ {r.rating}</td>
-                            <td className="p-2.5 truncate max-w-[200px] text-slate-500 italic">&quot;{r.comment}&quot;</td>
+                            <td className="p-3 font-mono text-indigo-600 font-bold">{r.returnId}</td>
+                            <td className="p-3 truncate max-w-[140px] text-slate-900 font-bold">{r.productName}</td>
+                            <td className="p-3 text-slate-600 font-medium">{r.category}</td>
+                            <td className="p-3 text-slate-800 font-semibold">{r.customerName}</td>
+                            <td className="p-3 font-bold text-amber-600">★ {r.rating}</td>
+                            <td className="p-3 truncate max-w-[200px] text-slate-600 italic">&quot;{r.comment}&quot;</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
                   )
                 ) : invalidRows.length === 0 ? (
-                  <div className="p-8 text-center text-xs text-emerald-700 font-medium">
+                  <div className="p-8 text-center text-sm text-emerald-700 font-bold">
                     ✓ Clean CSV file! Zero invalid or duplicate rows detected.
                   </div>
                 ) : (
-                  <table className="w-full text-left text-xs text-slate-700">
-                    <thead className="bg-rose-50 sticky top-0 text-[11px] font-semibold text-rose-700 border-b border-rose-200">
+                  <table className="w-full text-left text-sm text-slate-700">
+                    <thead className="bg-rose-50 sticky top-0 text-xs font-bold text-rose-700 border-b border-rose-200 uppercase tracking-wider">
                       <tr>
-                        <th className="p-2.5">Line</th>
-                        <th className="p-2.5">Return ID</th>
-                        <th className="p-2.5">Validation Failure Reason</th>
+                        <th className="p-3">Line</th>
+                        <th className="p-3">Return ID</th>
+                        <th className="p-3">Validation Failure Reason</th>
                       </tr>
                     </thead>
                     <tbody className="divide-y divide-rose-100 bg-white">
                       {invalidRows.map((r) => (
                         <tr key={r.rowNum}>
-                          <td className="p-2.5 font-mono text-slate-500">Line {r.rowNum}</td>
-                          <td className="p-2.5 font-mono text-rose-700 font-bold">{r.returnId || 'EMPTY'}</td>
-                          <td className="p-2.5 text-rose-600 font-semibold">{r.errorReason}</td>
+                          <td className="p-3 font-mono text-slate-500">Line {r.rowNum}</td>
+                          <td className="p-3 font-mono text-rose-700 font-bold">{r.returnId || 'EMPTY'}</td>
+                          <td className="p-3 text-rose-600 font-bold">{r.errorReason}</td>
                         </tr>
                       ))}
                     </tbody>
@@ -468,11 +453,11 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
           {/* Progress Bar */}
           {isProcessing && (
             <div className="space-y-2 p-4 rounded-2xl bg-indigo-50 border border-indigo-200">
-              <div className="flex justify-between text-xs font-semibold text-indigo-700">
+              <div className="flex justify-between text-sm font-bold text-indigo-700">
                 <span>Writing return records to Cloud Firestore...</span>
                 <span>{progress}%</span>
               </div>
-              <div className="w-full bg-slate-200 h-2 rounded-full overflow-hidden">
+              <div className="w-full bg-slate-200 h-2.5 rounded-full overflow-hidden">
                 <div
                   className="bg-indigo-600 h-full rounded-full transition-all duration-300"
                   style={{ width: `${progress}%` }}
@@ -489,12 +474,12 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
               </div>
 
               <div>
-                <h3 className="text-base font-bold text-emerald-900">CSV Import Successfully Completed!</h3>
-                <p className="text-xs text-slate-600 mt-1">
+                <h3 className="text-lg font-extrabold text-emerald-900">CSV Import Successfully Completed!</h3>
+                <p className="text-sm text-slate-700 mt-1">
                   Successfully processed and saved <strong>{importSummary.successCount}</strong> return records into your store database.
                 </p>
                 {importSummary.failedCount > 0 && (
-                  <p className="text-xs text-amber-700 mt-0.5">
+                  <p className="text-sm text-amber-700 font-semibold mt-0.5">
                     ({importSummary.failedCount} invalid/duplicate rows were skipped).
                   </p>
                 )}
@@ -505,7 +490,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
                   handleReset();
                   onClose();
                 }}
-                className="px-6 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs shadow-md transition"
+                className="px-6 py-3 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm shadow-md transition"
               >
                 Close & View Updated Returns
               </button>
@@ -516,7 +501,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
         {/* Footer Actions */}
         {file && !importSummary && (
           <div className="p-4 bg-slate-50 border-t border-slate-200 flex items-center justify-between">
-            <div className="text-xs text-slate-500">
+            <div className="text-sm text-slate-600 font-medium">
               Ready to import <strong className="text-emerald-600 font-bold">{validRows.length}</strong> valid rows.
             </div>
 
@@ -526,7 +511,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
                   handleReset();
                   onClose();
                 }}
-                className="px-4 py-2 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-700 font-semibold text-xs transition"
+                className="px-4 py-2.5 rounded-xl bg-slate-200 hover:bg-slate-300 text-slate-800 font-bold text-sm transition"
               >
                 Cancel
               </button>
@@ -534,7 +519,7 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
               <button
                 onClick={handleConfirmImport}
                 disabled={validRows.length === 0 || isProcessing}
-                className="flex items-center space-x-2 px-5 py-2 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition"
+                className="flex items-center space-x-2 px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold text-sm shadow-md shadow-indigo-600/20 transition"
               >
                 <span>{isProcessing ? 'Saving to Database...' : 'Confirm & Import Valid Rows'}</span>
                 <ArrowRight className="w-4 h-4" />

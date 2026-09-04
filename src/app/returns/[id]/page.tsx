@@ -117,19 +117,19 @@ export default function ReturnDetailPage({ params }: { params: Promise<{ id: str
         <div className="flex items-center justify-between">
           <Link
             href="/returns"
-            className="inline-flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition shadow-sm"
+            className="inline-flex items-center space-x-2 px-3.5 py-2 rounded-xl bg-white border border-slate-300 text-sm font-bold text-slate-700 hover:bg-slate-50 transition shadow-sm"
           >
             <ArrowLeft className="w-4 h-4" />
             <span>Back to Returns</span>
           </Link>
 
           <div className="flex items-center space-x-2">
-            <span className="text-xs text-slate-500 font-mono">ID: {record.id}</span>
+            <span className="text-sm text-slate-600 font-mono font-medium">ID: {record.id}</span>
             <span
-              className={`px-2.5 py-1 rounded-full text-xs font-bold ${
+              className={`px-3 py-1 rounded-full text-sm font-bold ${
                 record.status === 'Analyzed'
-                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-200'
-                  : 'bg-amber-50 text-amber-700 border border-amber-200'
+                  ? 'bg-emerald-50 text-emerald-700 border border-emerald-300'
+                  : 'bg-amber-50 text-amber-700 border border-amber-300'
               }`}
             >
               {record.status}
@@ -138,21 +138,21 @@ export default function ReturnDetailPage({ params }: { params: Promise<{ id: str
         </div>
 
         {/* Page Title & Main Header */}
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-white border border-slate-200 shadow-sm">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 p-6 rounded-3xl bg-white border border-slate-300 shadow-sm">
           <div className="space-y-1">
-            <div className="flex items-center space-x-2 text-xs font-semibold text-indigo-600">
-              <Package className="w-4 h-4" />
+            <div className="flex items-center space-x-2 text-sm font-bold text-indigo-600">
+              <Package className="w-4.5 h-4.5" />
               <span>{record.category}</span>
               <span className="text-slate-300">•</span>
               <span className="font-mono text-slate-500">{record.sku}</span>
             </div>
-            <h1 className="text-2xl font-bold text-slate-900">{record.productName}</h1>
+            <h1 className="text-3xl font-extrabold text-slate-900 tracking-tight">{record.productName}</h1>
           </div>
 
           <button
             onClick={handleRunAiAnalysis}
             disabled={aiState === 'loading'}
-            className="flex items-center justify-center space-x-2.5 px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition transform active:scale-95"
+            className="flex items-center justify-center space-x-2.5 px-6 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 disabled:opacity-50 text-white font-bold text-sm shadow-md shadow-indigo-600/20 transition transform active:scale-95"
           >
             <Sparkles className={`w-4 h-4 ${aiState === 'loading' ? 'animate-spin' : ''}`} />
             <span>
@@ -170,47 +170,47 @@ export default function ReturnDetailPage({ params }: { params: Promise<{ id: str
           {/* Column 1: Customer Feedback & Product Specs */}
           <div className="lg:col-span-1 space-y-6">
             {/* Customer Return Request Details Card */}
-            <div className="glass-panel p-6 rounded-3xl border border-slate-200 space-y-5 shadow-sm">
-              <h3 className="text-sm font-bold text-slate-900 border-b border-slate-200 pb-3 flex items-center space-x-2">
+            <div className="glass-panel p-6 rounded-3xl border border-slate-300 space-y-5 shadow-sm">
+              <h3 className="text-base font-extrabold text-slate-900 border-b border-slate-200 pb-3 flex items-center space-x-2">
                 <User className="w-4 h-4 text-indigo-600" />
                 <span>Customer Return Request</span>
               </h3>
 
-              <div className="space-y-4 text-xs">
+              <div className="space-y-4 text-sm">
                 <div>
-                  <span className="text-slate-400 block text-[11px]">Customer Name</span>
-                  <span className="font-semibold text-slate-900">{record.customerName || 'Anonymous Customer'}</span>
+                  <span className="text-slate-500 block text-xs font-medium">Customer Name</span>
+                  <span className="font-bold text-slate-900 text-sm">{record.customerName || 'Anonymous Customer'}</span>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block text-[11px]">Order Number</span>
-                  <span className="font-mono text-indigo-600 font-bold">{record.orderId}</span>
+                  <span className="text-slate-500 block text-xs font-medium">Order Number</span>
+                  <span className="font-mono text-indigo-600 font-bold text-sm">{record.orderId}</span>
                 </div>
 
-                <div className="flex justify-between items-center py-2 border-y border-slate-200">
+                <div className="flex justify-between items-center py-2.5 border-y border-slate-200">
                   <div>
-                    <span className="text-slate-400 block text-[11px]">Refund Value</span>
-                    <span className="font-bold text-emerald-600 text-sm">
+                    <span className="text-slate-500 block text-xs font-medium">Refund Value</span>
+                    <span className="font-extrabold text-emerald-600 text-base">
                       {formatCurrency(record.refundAmount || record.price || 0)}
                     </span>
                   </div>
 
                   <div>
-                    <span className="text-slate-400 block text-[11px]">Return Date</span>
-                    <span className="text-slate-700 font-medium">{record.returnDate}</span>
+                    <span className="text-slate-500 block text-xs font-medium">Return Date</span>
+                    <span className="text-slate-800 font-bold text-sm">{record.returnDate}</span>
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block text-[11px]">Customer Rating Given</span>
-                  <div className="flex items-center space-x-1 mt-1 text-amber-600 font-bold">
+                  <span className="text-slate-500 block text-xs font-medium">Customer Rating Given</span>
+                  <div className="flex items-center space-x-1 mt-1 text-amber-600 font-bold text-sm">
                     <span>★ {record.rating || 3}.0 / 5.0</span>
                   </div>
                 </div>
 
                 <div>
-                  <span className="text-slate-400 block text-[11px] mb-1">Customer Return Feedback Comment</span>
-                  <div className="p-3.5 rounded-2xl bg-slate-50 border border-slate-200 text-slate-700 italic leading-relaxed text-xs">
+                  <span className="text-slate-500 block text-xs font-medium mb-1.5">Customer Return Feedback Comment</span>
+                  <div className="p-4 rounded-2xl bg-slate-50 border border-slate-200 text-slate-800 italic leading-relaxed text-sm font-medium">
                     &quot;{record.customerComment}&quot;
                   </div>
                 </div>
@@ -223,16 +223,16 @@ export default function ReturnDetailPage({ params }: { params: Promise<{ id: str
             {/* AI Error Alert */}
             {aiState === 'error' && errorMessage && (
               <div className="p-5 rounded-3xl bg-rose-50 border border-rose-200 space-y-3 animate-fade-in">
-                <div className="flex items-start space-x-3 text-xs text-rose-900">
+                <div className="flex items-start space-x-3 text-sm text-rose-900">
                   <AlertCircle className="w-5 h-5 text-rose-600 shrink-0 mt-0.5" />
                   <div>
                     <h4 className="font-bold text-rose-900">AI Analysis Execution Failed</h4>
-                    <p className="mt-1 leading-relaxed text-rose-700">{errorMessage}</p>
+                    <p className="mt-1 leading-relaxed text-rose-700 text-sm">{errorMessage}</p>
                   </div>
                 </div>
                 <button
                   onClick={handleRunAiAnalysis}
-                  className="px-4 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-800 font-semibold text-xs transition border border-rose-200"
+                  className="px-4 py-2 rounded-xl bg-rose-100 hover:bg-rose-200 text-rose-800 font-bold text-xs transition border border-rose-200"
                 >
                   Retry Gemini AI Analysis
                 </button>
@@ -249,15 +249,15 @@ export default function ReturnDetailPage({ params }: { params: Promise<{ id: str
                       <Sparkles className="w-5 h-5" />
                     </div>
                     <div>
-                      <h3 className="text-base font-bold text-slate-900">Gemini AI Return Intelligence</h3>
-                      <p className="text-xs text-slate-500">
+                      <h3 className="text-lg font-extrabold text-slate-900">Gemini AI Return Intelligence</h3>
+                      <p className="text-xs font-semibold text-slate-500">
                         Analyzed on {currentAnalysis.analyzedAt || 'Just Now'}
                       </p>
                     </div>
                   </div>
 
                   <div className="flex items-center space-x-2">
-                    <span className="text-[11px] text-slate-500 font-mono">
+                    <span className="text-xs text-slate-600 font-mono font-bold">
                       Confidence: {Math.round((currentAnalysis.confidence || 0.95) * 100)}%
                     </span>
                   </div>
@@ -265,17 +265,17 @@ export default function ReturnDetailPage({ params }: { params: Promise<{ id: str
 
                 {/* Key Metrics Pill Row */}
                 <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-                  <div className="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-1 shadow-sm">
-                    <span className="text-[11px] text-slate-500 font-medium">Issue Category</span>
-                    <p className="text-xs font-bold text-indigo-600">
+                  <div className="p-4 rounded-2xl bg-white border border-slate-300 space-y-1 shadow-sm">
+                    <span className="text-xs text-slate-500 font-medium">Issue Category</span>
+                    <p className="text-sm font-bold text-indigo-600">
                       {currentAnalysis.category || currentAnalysis.suggestedCategory || record.reasonCategory}
                     </p>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-1 shadow-sm">
-                    <span className="text-[11px] text-slate-500 font-medium">Assessed Severity</span>
+                  <div className="p-4 rounded-2xl bg-white border border-slate-300 space-y-1 shadow-sm">
+                    <span className="text-xs text-slate-500 font-medium block">Assessed Severity</span>
                     <span
-                      className={`inline-block px-2.5 py-0.5 rounded-full text-xs font-bold ${
+                      className={`inline-block px-3 py-0.5 rounded-full text-xs font-extrabold ${
                         (currentAnalysis.severity || '').toString().toLowerCase() === 'high'
                           ? 'bg-rose-50 text-rose-700 border border-rose-200'
                           : (currentAnalysis.severity || '').toString().toLowerCase() === 'medium'
@@ -287,9 +287,9 @@ export default function ReturnDetailPage({ params }: { params: Promise<{ id: str
                     </span>
                   </div>
 
-                  <div className="p-3.5 rounded-2xl bg-white border border-slate-200 space-y-1 shadow-sm">
-                    <span className="text-[11px] text-slate-500 font-medium">Customer Sentiment</span>
-                    <p className="text-xs font-bold capitalize text-slate-800">
+                  <div className="p-4 rounded-2xl bg-white border border-slate-300 space-y-1 shadow-sm">
+                    <span className="text-xs text-slate-500 font-medium">Customer Sentiment</span>
+                    <p className="text-sm font-bold capitalize text-slate-800">
                       {currentAnalysis.sentiment || currentAnalysis.customerSentiment || 'Negative'}
                     </p>
                   </div>
@@ -297,41 +297,41 @@ export default function ReturnDetailPage({ params }: { params: Promise<{ id: str
 
                 {/* Main Return Reason */}
                 <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">Identified Root Cause Reason</h4>
-                  <p className="text-xs text-slate-900 leading-relaxed font-semibold p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <h4 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">Identified Root Cause Reason</h4>
+                  <p className="text-sm text-slate-900 leading-relaxed font-bold p-4 rounded-2xl bg-white border border-slate-300 shadow-sm">
                     {currentAnalysis.reason || currentAnalysis.mainReason || currentAnalysis.identifiedReason}
                   </p>
                 </div>
 
                 {/* Short Summary */}
                 <div className="space-y-2">
-                  <h4 className="text-xs font-bold text-slate-500 uppercase tracking-wider">AI Executive Summary</h4>
-                  <p className="text-xs text-slate-700 leading-relaxed p-3.5 rounded-2xl bg-white border border-slate-200 shadow-sm">
+                  <h4 className="text-xs font-extrabold text-slate-500 uppercase tracking-wider">AI Executive Summary</h4>
+                  <p className="text-sm text-slate-800 leading-relaxed p-4 rounded-2xl bg-white border border-slate-300 shadow-sm font-medium">
                     {currentAnalysis.summary || currentAnalysis.shortSummary || currentAnalysis.rootCause}
                   </p>
                 </div>
 
                 {/* Recommended Action */}
-                <div className="p-4 rounded-2xl bg-indigo-50 border border-indigo-200 space-y-2">
-                  <div className="flex items-center space-x-2 text-xs font-bold text-indigo-700">
+                <div className="p-5 rounded-2xl bg-indigo-50 border border-indigo-200 space-y-2">
+                  <div className="flex items-center space-x-2 text-sm font-bold text-indigo-700">
                     <Lightbulb className="w-4 h-4 text-indigo-600" />
                     <span>Recommended Business Action</span>
                   </div>
-                  <p className="text-xs text-indigo-950 leading-relaxed font-medium">
+                  <p className="text-sm text-indigo-950 leading-relaxed font-semibold">
                     {currentAnalysis.recommendedAction}
                   </p>
                 </div>
               </div>
             ) : (
               /* Unanalyzed Call-to-Action Card */
-              <div className="glass-panel p-8 rounded-3xl border border-slate-200 text-center space-y-4 shadow-sm">
+              <div className="glass-panel p-8 rounded-3xl border border-slate-300 text-center space-y-4 shadow-sm">
                 <div className="w-14 h-14 rounded-2xl bg-indigo-50 border border-indigo-100 flex items-center justify-center text-indigo-600 mx-auto">
                   <FlaskConical className="w-7 h-7" />
                 </div>
 
-                <div className="max-w-md mx-auto space-y-1">
-                  <h3 className="text-base font-bold text-slate-900">AI Intelligence Ready</h3>
-                  <p className="text-xs text-slate-500 leading-relaxed">
+                <div className="max-w-md mx-auto space-y-1.5">
+                  <h3 className="text-lg font-extrabold text-slate-900">AI Intelligence Ready</h3>
+                  <p className="text-sm text-slate-600 leading-relaxed">
                     Click below to trigger Gemini AI Model to analyze customer sentiment, classify issue root cause, and generate actionable business recommendations.
                   </p>
                 </div>
@@ -339,7 +339,7 @@ export default function ReturnDetailPage({ params }: { params: Promise<{ id: str
                 <button
                   onClick={handleRunAiAnalysis}
                   disabled={aiState === 'loading'}
-                  className="px-6 py-3 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-xs shadow-md shadow-indigo-600/20 transition transform active:scale-95 inline-flex items-center space-x-2"
+                  className="px-6 py-3.5 rounded-2xl bg-indigo-600 hover:bg-indigo-500 text-white font-bold text-sm shadow-md shadow-indigo-600/20 transition transform active:scale-95 inline-flex items-center space-x-2"
                 >
                   <Sparkles className="w-4 h-4" />
                   <span>Run AI Analysis Now</span>

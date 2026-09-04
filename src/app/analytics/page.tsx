@@ -91,88 +91,88 @@ export default function AnalyticsPage() {
         {/* Page Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h1 className="text-2xl font-bold text-slate-900 tracking-tight">
+            <h1 className="heading-primary">
               Return Analytics & Visual Insights
             </h1>
-            <p className="text-xs text-slate-500 mt-1">
+            <p className="subtext-muted mt-1">
               Visualizing return categories, severity distributions, and financial impact trajectories
             </p>
           </div>
 
-          <div className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-mono text-indigo-600 shadow-sm">
-            <Sparkles className="w-3.5 h-3.5 text-indigo-600" />
+          <div className="flex items-center space-x-2 px-4 py-2 rounded-xl bg-white border border-slate-400 text-sm font-mono text-indigo-700 shadow-sm font-extrabold">
+            <Sparkles className="w-4 h-4 text-indigo-600" />
             <span>Dataset: {returns.length} Return Records</span>
           </div>
         </div>
 
         {/* 4 Summary Metric Cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
-          <div className="glass-panel p-5 rounded-2xl border border-slate-200 space-y-2">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-xs font-semibold">Total Returns</span>
-              <RotateCcw className="w-4 h-4 text-indigo-600" />
+          <div className="glass-panel p-5 rounded-2xl border border-slate-400 space-y-2">
+            <div className="flex items-center justify-between text-slate-600">
+              <span className="text-sm font-extrabold uppercase tracking-wider">Total Returns</span>
+              <RotateCcw className="w-5 h-5 text-indigo-600" />
             </div>
-            <div className="text-2xl font-bold text-slate-900">{summaryMetrics.totalReturns}</div>
-            <p className="text-[11px] text-slate-500">Processed in current workspace</p>
+            <div className="text-3xl sm:text-4xl font-black text-slate-900">{summaryMetrics.totalReturns}</div>
+            <p className="text-xs sm:text-sm text-slate-600 font-medium">Processed in current workspace</p>
           </div>
 
-          <div className="glass-panel p-5 rounded-2xl border border-slate-200 space-y-2">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-xs font-semibold">Refund Cost Impact</span>
-              <DollarSign className="w-4 h-4 text-emerald-600" />
+          <div className="glass-panel p-5 rounded-2xl border border-slate-400 space-y-2">
+            <div className="flex items-center justify-between text-slate-600">
+              <span className="text-sm font-extrabold uppercase tracking-wider">Refund Cost Impact</span>
+              <DollarSign className="w-5 h-5 text-emerald-600" />
             </div>
-            <div className="text-2xl font-bold text-emerald-600">
+            <div className="text-3xl sm:text-4xl font-black text-emerald-600">
               {formatCurrency(totalCost)}
             </div>
-            <p className="text-[11px] text-emerald-600">Refund value calculated</p>
+            <p className="text-xs sm:text-sm text-emerald-700 font-semibold">Refund value calculated</p>
           </div>
 
-          <div className="glass-panel p-5 rounded-2xl border border-slate-200 space-y-2">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-xs font-semibold">High/Critical Severity</span>
-              <ShieldAlert className="w-4 h-4 text-rose-600" />
+          <div className="glass-panel p-5 rounded-2xl border border-slate-400 space-y-2">
+            <div className="flex items-center justify-between text-slate-600">
+              <span className="text-sm font-extrabold uppercase tracking-wider">High/Critical Severity</span>
+              <ShieldAlert className="w-5 h-5 text-rose-600" />
             </div>
-            <div className="text-2xl font-bold text-rose-600">{summaryMetrics.highSeverityReturns}</div>
-            <p className="text-[11px] text-rose-600">Requires quality control action</p>
+            <div className="text-3xl sm:text-4xl font-black text-rose-600">{summaryMetrics.highSeverityReturns}</div>
+            <p className="text-xs sm:text-sm text-rose-700 font-semibold">Requires quality control action</p>
           </div>
 
-          <div className="glass-panel p-5 rounded-2xl border border-slate-200 space-y-2">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-xs font-semibold">AI Analyzed</span>
-              <Sparkles className="w-4 h-4 text-cyan-600" />
+          <div className="glass-panel p-5 rounded-2xl border border-slate-400 space-y-2">
+            <div className="flex items-center justify-between text-slate-600">
+              <span className="text-sm font-extrabold uppercase tracking-wider">AI Analyzed</span>
+              <Sparkles className="w-5 h-5 text-cyan-600" />
             </div>
-            <div className="text-2xl font-bold text-cyan-600">{summaryMetrics.analyzedPercentage}%</div>
-            <p className="text-[11px] text-cyan-600">{summaryMetrics.analyzedReturns} returns classified</p>
+            <div className="text-3xl sm:text-4xl font-black text-cyan-600">{summaryMetrics.analyzedPercentage}%</div>
+            <p className="text-xs sm:text-sm text-cyan-700 font-semibold">{summaryMetrics.analyzedReturns} returns classified</p>
           </div>
         </div>
 
         {/* Charts Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Chart 1: Return Reasons Distribution */}
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <div className="flex items-center space-x-2">
+          <div className="glass-panel p-6 rounded-3xl border border-slate-400 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-300 pb-3.5">
+              <div className="flex items-center space-x-2.5">
                 <BarChart3 className="w-5 h-5 text-indigo-600" />
-                <h3 className="text-sm font-bold text-slate-900">Return Reason Category Breakdown</h3>
+                <h3 className="heading-card">Return Reason Category Breakdown</h3>
               </div>
-              <span className="text-xs text-slate-500">{reasonChartData.length} Categories</span>
+              <span className="text-xs sm:text-sm font-bold text-slate-600">{reasonChartData.length} Categories</span>
             </div>
 
             <div className="h-72 w-full pt-2">
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={reasonChartData} margin={{ top: 10, right: 10, left: -20, bottom: 30 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+                  <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
                   <XAxis
                     dataKey="reason"
-                    stroke="#64748b"
-                    tick={{ fontSize: 10, fill: '#475569' }}
+                    stroke="#475569"
+                    tick={{ fontSize: 12, fill: '#1e293b', fontWeight: 600 }}
                     interval={0}
                     angle={-20}
                     textAnchor="end"
                   />
-                  <YAxis stroke="#64748b" tick={{ fontSize: 11, fill: '#475569' }} allowDecimals={false} />
+                  <YAxis stroke="#475569" tick={{ fontSize: 12, fill: '#1e293b', fontWeight: 600 }} allowDecimals={false} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#ffffff', borderColor: '#cbd5e1', borderRadius: '12px', fontSize: '12px', color: '#0f172a', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                    contentStyle={{ backgroundColor: '#ffffff', borderColor: '#94a3b8', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold', color: '#0f172a', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                   />
                   <Bar dataKey="count" radius={[8, 8, 0, 0]}>
                     {reasonChartData.map((_, index) => (
@@ -185,11 +185,11 @@ export default function AnalyticsPage() {
           </div>
 
           {/* Chart 2: Severity Distribution Pie Chart */}
-          <div className="glass-panel p-6 rounded-3xl border border-slate-200 space-y-4 shadow-sm">
-            <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-              <div className="flex items-center space-x-2">
+          <div className="glass-panel p-6 rounded-3xl border border-slate-400 space-y-4 shadow-sm">
+            <div className="flex items-center justify-between border-b border-slate-300 pb-3.5">
+              <div className="flex items-center space-x-2.5">
                 <PieChartIcon className="w-5 h-5 text-amber-600" />
-                <h3 className="text-sm font-bold text-slate-900">Assessed Severity Distribution</h3>
+                <h3 className="heading-card">Assessed Severity Distribution</h3>
               </div>
             </div>
 
@@ -211,21 +211,21 @@ export default function AnalyticsPage() {
                       ))}
                     </Pie>
                     <Tooltip
-                      contentStyle={{ backgroundColor: '#ffffff', borderColor: '#cbd5e1', borderRadius: '12px', fontSize: '12px', color: '#0f172a', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                      contentStyle={{ backgroundColor: '#ffffff', borderColor: '#94a3b8', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold', color: '#0f172a', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                     />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
-                <div className="text-xs text-slate-500">No return records available for severity analysis.</div>
+                <div className="text-sm text-slate-500 font-medium">No return records available for severity analysis.</div>
               )}
             </div>
 
-            <div className="flex flex-wrap justify-center items-center gap-4 text-xs pt-2">
+            <div className="flex flex-wrap justify-center items-center gap-4 text-sm pt-2">
               {severityPieData.map((s) => (
-                <div key={s.name} className="flex items-center space-x-2 bg-slate-50 px-3 py-1.5 rounded-xl border border-slate-200">
-                  <span className="w-3 h-3 rounded-full" style={{ backgroundColor: s.color }} />
-                  <span className="text-slate-600 font-semibold">{s.name}:</span>
-                  <span className="text-slate-900 font-bold">{s.value}</span>
+                <div key={s.name} className="flex items-center space-x-2 bg-slate-50 px-3.5 py-2 rounded-xl border border-slate-300">
+                  <span className="w-3.5 h-3.5 rounded-full" style={{ backgroundColor: s.color }} />
+                  <span className="text-slate-700 font-bold">{s.name}:</span>
+                  <span className="text-slate-900 font-black">{s.value}</span>
                 </div>
               ))}
             </div>
@@ -233,13 +233,13 @@ export default function AnalyticsPage() {
         </div>
 
         {/* Chart 3: Financial Refund Cost Trajectory Area Chart */}
-        <div className="glass-panel p-6 rounded-3xl border border-slate-200 space-y-4 shadow-sm">
-          <div className="flex items-center justify-between border-b border-slate-200 pb-3">
-            <div className="flex items-center space-x-2">
+        <div className="glass-panel p-6 rounded-3xl border border-slate-400 space-y-4 shadow-sm">
+          <div className="flex items-center justify-between border-b border-slate-300 pb-3.5">
+            <div className="flex items-center space-x-2.5">
               <TrendingUp className="w-5 h-5 text-emerald-600" />
               <div>
-                <h3 className="text-sm font-bold text-slate-900">Financial Refund Cost Trajectory</h3>
-                <p className="text-[11px] text-slate-500">Monthly cumulative return cost impact ({currencySymbol})</p>
+                <h3 className="heading-card">Financial Refund Cost Trajectory</h3>
+                <p className="text-xs sm:text-sm text-slate-600 font-medium">Monthly cumulative return cost impact ({currencySymbol})</p>
               </div>
             </div>
           </div>
@@ -253,11 +253,11 @@ export default function AnalyticsPage() {
                     <stop offset="95%" stopColor="#10b981" stopOpacity={0.0} />
                   </linearGradient>
                 </defs>
-                <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                <XAxis dataKey="month" stroke="#64748b" tick={{ fontSize: 11, fill: '#475569' }} />
-                <YAxis stroke="#64748b" tick={{ fontSize: 11, fill: '#475569' }} />
+                <CartesianGrid strokeDasharray="3 3" stroke="#cbd5e1" />
+                <XAxis dataKey="month" stroke="#475569" tick={{ fontSize: 12, fill: '#1e293b', fontWeight: 600 }} />
+                <YAxis stroke="#475569" tick={{ fontSize: 12, fill: '#1e293b', fontWeight: 600 }} />
                 <Tooltip
-                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#cbd5e1', borderRadius: '12px', fontSize: '12px', color: '#0f172a', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
+                  contentStyle={{ backgroundColor: '#ffffff', borderColor: '#94a3b8', borderRadius: '12px', fontSize: '13px', fontWeight: 'bold', color: '#0f172a', boxShadow: '0 4px 6px -1px rgba(0,0,0,0.1)' }}
                   formatter={(value: any) => [formatCurrency(Number(value)), 'Refund Cost']}
                 />
                 <Area type="monotone" dataKey="cost" stroke="#10b981" strokeWidth={3} fillOpacity={1} fill="url(#colorCost)" dot={{ r: 6, fill: '#10b981' }} />

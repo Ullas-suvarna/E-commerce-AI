@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
-import { Menu, Search, Upload, CloudUpload, LogOut, ChevronDown, AlertTriangle, X } from 'lucide-react';
+import { Menu, Search, Upload, CloudUpload, LogOut, ChevronDown, AlertTriangle } from 'lucide-react';
 import { useAuth } from '@/context/AuthContext';
 import { useData } from '@/context/DataContext';
 
@@ -24,7 +24,7 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileMenu, onOpenImportMo
 
   return (
     <>
-      <header className="sticky top-0 z-20 h-16 bg-white/90 backdrop-blur-md border-b border-slate-200 px-4 lg:px-8 flex items-center justify-between">
+      <header className="sticky top-0 z-20 h-16 bg-white/95 backdrop-blur-md border-b border-slate-400 px-4 lg:px-8 flex items-center justify-between shadow-2xs">
         {/* Left section */}
         <div className="flex items-center space-x-4">
           <button
@@ -36,14 +36,14 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileMenu, onOpenImportMo
           </button>
 
           {/* Global Search Bar */}
-          <div className="relative w-48 sm:w-72 md:w-80">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
+          <div className="relative w-52 sm:w-80 md:w-96">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-slate-500" />
             <input
               type="text"
               placeholder="Search return ID, SKU, customer..."
               value={filterState.searchQuery}
               onChange={(e) => setFilterState((prev) => ({ ...prev, searchQuery: e.target.value }))}
-              className="w-full pl-9 pr-4 py-1.5 bg-slate-100/80 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:bg-white focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500/20 transition"
+              className="w-full pl-10 pr-4 py-2 bg-slate-100/90 border border-slate-400 rounded-xl text-sm text-slate-900 placeholder-slate-500 focus:outline-none focus:bg-white focus:border-indigo-600 focus:ring-2 focus:ring-indigo-500/20 transition font-medium"
             />
           </div>
         </div>
@@ -54,25 +54,25 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileMenu, onOpenImportMo
           <button
             onClick={() => syncAllReturnsToFirestore()}
             disabled={isLoading}
-            className="flex items-center space-x-1.5 px-3 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border border-emerald-200 text-xs font-semibold transition"
+            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100/80 text-emerald-800 border border-emerald-300 text-sm font-bold transition-all shadow-2xs active:scale-[0.98] cursor-pointer"
             title="Push all local & imported return dataset to Cloud Firestore"
           >
-            <CloudUpload className="w-3.5 h-3.5" />
+            <CloudUpload className="w-4 h-4 text-emerald-600" />
             <span className="hidden sm:inline">Sync to Firestore</span>
           </button>
 
           {/* CSV Import Button */}
           <button
             onClick={onOpenImportModal}
-            className="flex items-center space-x-2 px-3 py-1.5 rounded-xl bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border border-indigo-200 text-xs font-semibold transition"
+            className="inline-flex items-center space-x-2 px-4 py-2 rounded-xl bg-indigo-50 hover:bg-indigo-100/80 text-indigo-800 border border-indigo-300 text-sm font-bold transition-all shadow-2xs active:scale-[0.98] cursor-pointer"
           >
-            <Upload className="w-3.5 h-3.5" />
+            <Upload className="w-4 h-4 text-indigo-600" />
             <span className="hidden sm:inline">Import CSV</span>
           </button>
 
           {/* System Status Pill */}
-          <div className="hidden md:flex items-center space-x-1.5 px-2.5 py-1 rounded-full bg-slate-100 border border-slate-200 text-[11px] text-slate-600 font-medium">
-            <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+          <div className="hidden md:flex items-center space-x-2 px-3.5 py-1.5 rounded-full bg-slate-100 border border-slate-300 text-xs text-slate-800 font-extrabold">
+            <span className="w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse" />
             <span>Spark Connected</span>
           </div>
 
@@ -80,18 +80,18 @@ export const Topbar: React.FC<TopbarProps> = ({ onOpenMobileMenu, onOpenImportMo
           <div className="relative">
             <button
               onClick={() => setUserDropdownOpen(!userDropdownOpen)}
-              className="flex items-center space-x-2.5 p-1.5 rounded-xl hover:bg-slate-100 border border-transparent hover:border-slate-200 transition"
+              className="flex items-center space-x-3 p-1.5 rounded-xl hover:bg-slate-100 border border-transparent hover:border-slate-300 transition active:scale-[0.98]"
             >
-              <div className="w-8 h-8 rounded-lg bg-indigo-100 border border-indigo-200 flex items-center justify-center text-indigo-700 font-bold text-xs">
+              <div className="w-9 h-9 rounded-xl bg-gradient-to-tr from-indigo-600 to-cyan-500 text-white flex items-center justify-center font-black text-sm shadow-sm">
                 {user?.email?.charAt(0).toUpperCase() || 'U'}
               </div>
               <div className="hidden sm:block text-left">
-                <div className="text-xs font-semibold text-slate-900 leading-tight">
+                <div className="text-sm font-extrabold text-slate-900 leading-tight">
                   {user?.storeName || 'My Store'}
                 </div>
-                <div className="text-[10px] text-slate-500">{user?.email || 'admin@store.com'}</div>
+                <div className="text-xs text-slate-600 font-semibold">{user?.email || 'admin@store.com'}</div>
               </div>
-              <ChevronDown className="w-3.5 h-3.5 text-slate-400 hidden sm:block" />
+              <ChevronDown className="w-4 h-4 text-slate-500 hidden sm:block" />
             </button>
 
             {/* User Dropdown */}

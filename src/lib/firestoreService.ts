@@ -197,6 +197,20 @@ export async function deleteFirestoreReturn(uid: string, returnId: string) {
   await deleteDoc(userDocRef);
 }
 
+export async function clearAllFirestoreReturns(uid: string) {
+  try {
+    const userReturnsCol = collection(db, 'users', uid || 'demo-user-spark', 'returns');
+    const snap = await getDocs(userReturnsCol);
+    if (!snap.empty) {
+      const batch = writeBatch(db);
+      snap.forEach((docSnap) => {
+        batch.delete(docSnap.ref);
+      });
+      await batch.commit();
+    }
+  } catch (e) {}
+}
+
 // Products Subcollection Services (/users/{userId}/products/{productId})
 export function subscribeToUserProducts(
   uid: string,
