@@ -91,7 +91,7 @@ export default function RegisterPage() {
         msg = err.message;
       }
       setAuthError(msg);
-    } fontally {
+    } finally {
       setIsGoogleSubmitting(false);
     }
   };
