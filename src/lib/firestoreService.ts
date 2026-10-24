@@ -291,3 +291,129 @@ export async function seedInitialUserDataIfEmpty(uid: string) {
     // Suppress console error if Firestore rules reject unauthenticated write
   }
 }
+
+// Complaint Screening Subcollection Services (/users/{userId}/complaintScreening/{screeningId})
+export async function saveFirestoreScreeningRecord(uid: string, record: any) {
+  try {
+    const docRef = doc(db, 'users', uid || 'demo-user-spark', 'complaintScreening', record.id);
+    await setDoc(docRef, { ...record, updatedAt: serverTimestamp() }, { merge: true });
+  } catch (err) {
+    // Non-fatal if offline or demo
+  }
+}
+
+export async function batchSaveFirestoreScreenings(uid: string, records: any[]) {
+  try {
+    const batch = writeBatch(db);
+    const colRef = collection(db, 'users', uid || 'demo-user-spark', 'complaintScreening');
+    records.slice(0, 450).forEach((rec) => {
+      const docRef = doc(colRef, rec.id);
+      batch.set(docRef, { ...rec, updatedAt: serverTimestamp() }, { merge: true });
+    });
+    await batch.commit();
+  } catch (err) {
+    // Non-fatal if offline or demo
+  }
+}
+
+export async function deleteFirestoreScreeningRecord(uid: string, screeningId: string) {
+  try {
+    const docRef = doc(db, 'users', uid || 'demo-user-spark', 'complaintScreening', screeningId);
+    await deleteDoc(docRef);
+  } catch (err) {
+    // Non-fatal if offline or demo
+  }
+}
+
+// Rejected Complaints Subcollection Services (/users/{userId}/rejectedComplaints/{rejectedId})
+export async function saveFirestoreRejectedComplaint(uid: string, record: any) {
+  try {
+    const docRef = doc(db, 'users', uid || 'demo-user-spark', 'rejectedComplaints', record.id);
+    await setDoc(docRef, { ...record, rejectedAt: serverTimestamp(), updatedAt: serverTimestamp() }, { merge: true });
+  } catch (err) {
+    // Non-fatal if offline or demo
+  }
+}
+
+export async function deleteFirestoreRejectedComplaint(uid: string, rejectedId: string) {
+  try {
+    const docRef = doc(db, 'users', uid || 'demo-user-spark', 'rejectedComplaints', rejectedId);
+    await deleteDoc(docRef);
+  } catch (err) {
+    // Non-fatal if offline or demo
+  }
+}
+
+export function subscribeToUserRejectedComplaints(
+  uid: string,
+  onSuccess: (rejected: any[]) => void
+) {
+  try {
+    const colRef = collection(db, 'users', uid || 'demo-user-spark', 'rejectedComplaints');
+    return onSnapshot(
+      colRef,
+      (snapshot) => {
+        const rejected: any[] = [];
+        snapshot.forEach((docSnap) => {
+          rejected.push(docSnap.data());
+        });
+        onSuccess(rejected);
+      },
+      () => {}
+    );
+  } catch (e) {
+    return () => {};
+  }
+}
+
+export async function getFirestoreRejectedComplaints(uid: string): Promise<any[]> {
+  try {
+    const colRef = collection(db, 'users', uid || 'demo-user-spark', 'rejectedComplaints');
+    const snap = await getDocs(colRef);
+    const list: any[] = [];
+    snap.forEach((docSnap) => list.push(docSnap.data()));
+    return list;
+  } catch (e) {
+    return [];
+  }
+}
+
+export function subscribeToUserScreenings(
+  uid: string,
+  onSuccess: (screenings: any[]) => void
+) {
+  try {
+    const colRef = collection(db, 'users', uid || 'demo-user-spark', 'complaintScreening');
+    return onSnapshot(
+      colRef,
+      (snapshot) => {
+        const screenings: any[] = [];
+        snapshot.forEach((docSnap) => {
+          screenings.push(docSnap.data());
+        });
+        onSuccess(screenings);
+      },
+      () => {}
+    );
+  } catch (e) {
+    return () => {};
+  }
+}
+
+export async function saveFirestoreCompanyRules(uid: string, rules: any[]) {
+  try {
+    const docRef = doc(db, 'users', uid || 'demo-user-spark', 'companyRules', 'config');
+    await setDoc(docRef, { rules, updatedAt: serverTimestamp() }, { merge: true });
+  } catch (err) {}
+}
+
+export async function getFirestoreCompanyRules(uid: string): Promise<any[] | null> {
+  try {
+    const docRef = doc(db, 'users', uid || 'demo-user-spark', 'companyRules', 'config');
+    const snap = await getDoc(docRef);
+    if (snap.exists()) {
+      return (snap.data()?.rules as any[]) || null;
+    }
+  } catch (err) {}
+  return null;
+}

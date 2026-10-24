@@ -36,6 +36,7 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
     { name: 'Products', href: '/products', icon: Package },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
     { name: 'AI Insights', href: '/ai-insights', icon: Sparkles },
+    { name: 'Complaint Screening', href: '/screening', icon: ShieldCheck, badge: 'PRO', highlight: true },
     { name: 'AI Report Center', href: '/reports', icon: FileText, badge: 'NEW', highlight: true },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];

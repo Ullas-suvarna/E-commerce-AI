@@ -19,6 +19,15 @@ service cloud.firestore {
       match /recommendations/{recId} {
         allow read, write: if userId == 'demo-user-spark' || (request.auth != null && request.auth.uid == userId);
       }
+      match /complaintScreening/{screeningId} {
+        allow read, write: if userId == 'demo-user-spark' || (request.auth != null && request.auth.uid == userId);
+      }
+      match /rejectedComplaints/{rejectedId} {
+        allow read, write: if userId == 'demo-user-spark' || (request.auth != null && request.auth.uid == userId);
+      }
+      match /companyRules/{ruleId} {
+        allow read, write: if userId == 'demo-user-spark' || (request.auth != null && request.auth.uid == userId);
+      }
     }
     match /{document=**} {
       allow read, write: if false;

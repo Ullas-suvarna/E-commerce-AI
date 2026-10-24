@@ -58,7 +58,7 @@ interface DataContextType {
   formatCurrency: (amount?: number) => string;
   setFilterState: React.Dispatch<React.SetStateAction<ReturnFilterState>>;
   setSortOption: (sort: SortOption) => void;
-  addReturnRecord: (record: Omit<ReturnRecord, 'id'>) => Promise<void>;
+  addReturnRecord: (record: Omit<ReturnRecord, 'id'> & { id?: string }) => Promise<void>;
   updateReturnRecord: (id: string, updatedData: Partial<ReturnRecord>) => Promise<void>;
   importCsvRecords: (newRecords: (Omit<ReturnRecord, 'id'> & { id?: string })[]) => Promise<number>;
   syncAllReturnsToFirestore: () => Promise<number>;
@@ -230,7 +230,7 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     return () => unsubscribe();
   }, [user]);
 
-  const addReturnRecord = async (record: Omit<ReturnRecord, 'id'>) => {
+  const addReturnRecord = async (record: Omit<ReturnRecord, 'id'> & { id?: string }) => {
     const uid = user?.uid;
     const clearedKey = getUserClearedKey(uid);
     if (typeof window !== 'undefined') {
@@ -239,17 +239,17 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
       } catch (e) {}
     }
 
-    const newId = `RET-${Math.floor(1000 + Math.random() * 9000)}`;
+    const newId = record.id || `RET-${Math.floor(1000 + Math.random() * 9000)}`;
     const newRecord: ReturnRecord = { ...record, id: newId };
 
     setReturns((prev) => {
-      const updated = [newRecord, ...prev];
+      const updated = [newRecord, ...prev.filter((r) => (r.id || '').toLowerCase() !== newId.toLowerCase())];
       saveToStorage(updated, uid);
       return updated;
     });
 
     try {
-      await addFirestoreReturn(uid || 'demo-user-spark', record);
+      await addFirestoreReturn(uid || 'demo-user-spark', newRecord);
       showToast('success', 'Return Saved to Firestore', `Return record saved to Cloud Firestore (${newId}).`);
     } catch (err: any) {
       showToast('success', 'Return Saved Workspace', `Return ${newId} saved to workspace.`);
@@ -335,8 +335,9 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
   };
 
   const deleteReturnRecord = async (id: string) => {
+    const targetId = (id || '').trim().toLowerCase();
     setReturns((prev) => {
-      const updated = prev.filter((r) => r.id !== id);
+      const updated = prev.filter((r) => (r.id || '').trim().toLowerCase() !== targetId);
       saveToStorage(updated);
       return updated;
     });
