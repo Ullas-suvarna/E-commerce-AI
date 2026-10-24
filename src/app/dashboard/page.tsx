@@ -15,6 +15,7 @@ import {
   FileSpreadsheet,
   BarChart3,
   ShieldAlert,
+  FileText,
 } from 'lucide-react';
 import { CsvImportModal } from '@/components/returns/CsvImportModal';
 import { EmptyState, CardSkeleton } from '@/components/ui/StateViews';
@@ -44,6 +45,13 @@ export default function DashboardPage() {
           </div>
 
           <div className="flex items-center space-x-3 shrink-0">
+            <Link
+              href="/reports"
+              className="px-4 py-2.5 rounded-xl bg-indigo-50 border border-indigo-200 text-indigo-700 hover:bg-indigo-100 font-extrabold text-sm flex items-center space-x-2 transition shadow-2xs"
+            >
+              <FileText className="w-4 h-4 text-indigo-600" />
+              <span>AI PDF Report</span>
+            </Link>
             <button
               onClick={() => setImportModalOpen(true)}
               className="btn-primary"
@@ -187,7 +195,7 @@ export default function DashboardPage() {
                     <div className="space-y-3.5">
                       {summaryMetrics.topProblematicProducts.slice(0, 4).map((prod, idx) => (
                         <div
-                          key={prod.sku}
+                          key={`${prod.sku}_${prod.name}`}
                           className="p-4 sm:p-5 rounded-2xl bg-slate-50/90 border border-slate-300 flex flex-col sm:flex-row sm:items-center justify-between gap-4 hover:bg-slate-100 hover:border-slate-400 transition shadow-2xs"
                         >
                           <div className="flex items-start space-x-4">

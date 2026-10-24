@@ -55,11 +55,13 @@ export default function ProductsPage() {
     > = {};
 
     returns.forEach((r) => {
-      const key = r.sku || r.productName;
+      const prodName = (r.productName || '').trim();
+      const prodSku = (r.sku || '').trim();
+      const key = (prodName || prodSku || 'Unknown Product').toLowerCase();
       if (!map[key]) {
         map[key] = {
-          sku: r.sku,
-          productName: r.productName || r.sku,
+          sku: prodSku || 'SKU-GEN',
+          productName: prodName || prodSku || 'Unknown Product',
           category: r.category || 'General',
           price: r.price || 0,
           totalReturns: 0,
@@ -239,7 +241,7 @@ export default function ProductsPage() {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProducts.map((prod) => (
               <div
-                key={prod.sku}
+                key={`${prod.sku}_${prod.productName}`}
                 className="glass-panel p-6 rounded-3xl border border-slate-400 hover:border-indigo-500 transition-all group flex flex-col justify-between space-y-6 shadow-sm"
               >
                 {/* Header: Name, SKU, Category, Risk Level Badge */}

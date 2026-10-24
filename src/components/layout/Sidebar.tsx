@@ -12,6 +12,7 @@ import {
   Settings,
   ShieldCheck,
   Zap,
+  FileText,
 } from 'lucide-react';
 import { useData } from '@/context/DataContext';
 
@@ -34,7 +35,8 @@ export const Sidebar: React.FC<SidebarProps> = ({ mobileOpen, setMobileOpen }) =
     },
     { name: 'Products', href: '/products', icon: Package },
     { name: 'Analytics', href: '/analytics', icon: BarChart3 },
-    { name: 'AI Insights', href: '/ai-insights', icon: Sparkles, highlight: true },
+    { name: 'AI Insights', href: '/ai-insights', icon: Sparkles },
+    { name: 'AI Report Center', href: '/reports', icon: FileText, badge: 'NEW', highlight: true },
     { name: 'Settings', href: '/settings', icon: Settings },
   ];
 

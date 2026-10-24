@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import Papa from 'papaparse';
 import {
   Upload,
@@ -48,7 +48,9 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
   const { returns, importCsvRecords, showToast } = useData();
   const { user } = useAuth();
 
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [file, setFile] = useState<File | null>(null);
+  const [isDragging, setIsDragging] = useState(false);
   const [headerError, setHeaderError] = useState<string | null>(null);
   const [validRows, setValidRows] = useState<ParsedCsvRow[]>([]);
   const [invalidRows, setInvalidRows] = useState<ParsedCsvRow[]>([]);
@@ -60,6 +62,9 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
   if (!isOpen) return null;
 
   const handleReset = () => {
+    if (fileInputRef.current) {
+      fileInputRef.current.value = '';
+    }
     setFile(null);
     setHeaderError(null);
     setValidRows([]);
@@ -71,12 +76,49 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
 
   const handleFileSelect = (selectedFile: File) => {
     handleReset();
-    if (!selectedFile.name.endsWith('.csv')) {
+    const fileName = selectedFile.name.toLowerCase();
+    const isCsvExt = fileName.endsWith('.csv');
+    const isCsvMime = selectedFile.type === 'text/csv' || selectedFile.type === 'application/vnd.ms-excel';
+
+    if (!isCsvExt && !isCsvMime) {
       setHeaderError('Please select a valid CSV file (.csv format).');
       return;
     }
     setFile(selectedFile);
     parseCsvFile(selectedFile);
+  };
+
+  const openFilePicker = () => {
+    fileInputRef.current?.click();
+  };
+
+  const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(true);
+  };
+
+  const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    e.dataTransfer.dropEffect = 'copy';
+    if (!isDragging) setIsDragging(true);
+  };
+
+  const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (e.currentTarget.contains(e.relatedTarget as Node)) return;
+    setIsDragging(false);
+  };
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault();
+    e.stopPropagation();
+    setIsDragging(false);
+    if (e.dataTransfer.files && e.dataTransfer.files[0]) {
+      handleFileSelect(e.dataTransfer.files[0]);
+    }
   };
 
   const parseCsvFile = (csvFile: File) => {
@@ -120,7 +162,6 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
   };
 
   const processAndValidateRows = (rawRows: Record<string, any>[]) => {
-    const existingIds = new Set(returns.map((r) => r.id.toLowerCase()));
     const seenInFileIds = new Set<string>();
 
     const valid: ParsedCsvRow[] = [];
@@ -168,12 +209,12 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
         errorReason = 'Missing comment';
       }
 
-      // Auto-assign ID if missing or colliding
+      // Auto-assign ID if missing or duplicate within same file
       let returnId = rawReturnId;
       if (!returnId) {
         returnId = `RET-IMP-${rowNum}-${Math.floor(100 + Math.random() * 900)}`;
-      } else if (seenInFileIds.has(returnId.toLowerCase()) || existingIds.has(returnId.toLowerCase())) {
-        returnId = `${returnId}-IMP-${Math.floor(100 + Math.random() * 900)}`;
+      } else if (seenInFileIds.has(returnId.toLowerCase())) {
+        returnId = `${returnId}-DUP-${Math.floor(100 + Math.random() * 900)}`;
       }
 
       seenInFileIds.add(returnId.toLowerCase());
@@ -305,14 +346,24 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
           {/* File Upload Drop Zone */}
           {!file && !importSummary && (
             <div
-              onDragOver={(e) => e.preventDefault()}
-              onDrop={(e) => {
-                e.preventDefault();
-                if (e.dataTransfer.files && e.dataTransfer.files[0]) {
-                  handleFileSelect(e.dataTransfer.files[0]);
+              role="button"
+              tabIndex={0}
+              onClick={openFilePicker}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' || e.key === ' ') {
+                  e.preventDefault();
+                  openFilePicker();
                 }
               }}
-              className="border-2 border-dashed border-slate-300 hover:border-indigo-500 rounded-2xl p-8 text-center space-y-3 bg-slate-50/50 transition cursor-pointer group"
+              onDragEnter={handleDragEnter}
+              onDragOver={handleDragOver}
+              onDragLeave={handleDragLeave}
+              onDrop={handleDrop}
+              className={`border-2 border-dashed rounded-2xl p-8 text-center space-y-3 transition cursor-pointer group ${
+                isDragging
+                  ? 'border-indigo-600 bg-indigo-50/50'
+                  : 'border-slate-300 hover:border-indigo-500 bg-slate-50/50'
+              }`}
             >
               <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto group-hover:scale-110 transition-transform">
                 <Upload className="w-6 h-6" />
@@ -321,15 +372,31 @@ export const CsvImportModal: React.FC<CsvImportModalProps> = ({ isOpen, onClose 
               <div>
                 <p className="text-sm font-bold text-slate-800">
                   Drag & drop your return CSV file here, or{' '}
-                  <label className="text-indigo-600 hover:underline cursor-pointer">
+                  <span
+                    className="text-indigo-600 hover:underline cursor-pointer"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      openFilePicker();
+                    }}
+                  >
                     browse
-                    <input
-                      type="file"
-                      accept=".csv"
-                      onChange={(e) => e.target.files && handleFileSelect(e.target.files[0])}
-                      className="hidden"
-                    />
-                  </label>
+                  </span>
+                  <input
+                    ref={fileInputRef}
+                    id="csv-file-input"
+                    type="file"
+                    accept=".csv,text/csv"
+                    onChange={(e) => {
+                      const selected = e.target.files?.[0];
+                      if (selected) {
+                        handleFileSelect(selected);
+                      }
+                      e.target.value = '';
+                    }}
+                    className="sr-only"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                  />
                 </p>
                 <p className="text-xs text-slate-500 font-medium mt-1">
                   Required columns: <code className="text-indigo-700 font-mono font-bold">returnId, productName, category, customerName, rating, comment</code>

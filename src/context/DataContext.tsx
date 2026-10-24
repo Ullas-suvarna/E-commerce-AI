@@ -457,12 +457,14 @@ export const DataProvider: React.FC<{ children: React.ReactNode }> = ({ children
     > = {};
 
     returns.forEach((r) => {
-      const key = r.sku || r.productName;
+      const prodName = (r.productName || '').trim();
+      const prodSku = (r.sku || '').trim();
+      const key = (prodName || prodSku || 'Unknown Product').toLowerCase();
       if (!prodMap[key]) {
         prodMap[key] = {
-          sku: r.sku,
-          name: r.productName,
-          category: r.category,
+          sku: prodSku || 'SKU-GEN',
+          name: prodName || prodSku || 'Unknown Product',
+          category: r.category || 'General',
           returnCount: 0,
           reasons: {},
         };

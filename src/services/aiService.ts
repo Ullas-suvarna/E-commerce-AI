@@ -90,6 +90,49 @@ const productInsightSchema = {
   required: ['mainRecurringProblem', 'evidence', 'recommendedBusinessAction', 'priority'],
 };
 
+const GEMINI_API_KEY =
+  process.env.GEMINI_API_KEY ||
+  process.env.NEXT_PUBLIC_GEMINI_API_KEY ||
+  '';
+
+async function generateContentWithGeminiKey(prompt: string): Promise<string> {
+  const models = ['gemini-3.6-flash', 'gemini-3.5-flash-lite', 'gemini-3.1-flash-lite'];
+  let lastError: any = null;
+
+  for (const model of models) {
+    try {
+      const url = `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${GEMINI_API_KEY}`;
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          contents: [{ parts: [{ text: prompt }] }],
+          generationConfig: {
+            responseMimeType: 'application/json',
+          },
+        }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        const errDetail = errorData?.error?.message || `HTTP ${res.status}`;
+        lastError = new Error(`Model ${model}: ${errDetail}`);
+        continue;
+      }
+
+      const data = await res.json();
+      const text = data?.candidates?.[0]?.content?.parts?.[0]?.text;
+      if (text) {
+        return text;
+      }
+    } catch (e: any) {
+      lastError = e;
+    }
+  }
+
+  throw lastError || new Error('Failed to generate content using Gemini API.');
+}
+
 function validateAndNormalizeAiResponse(parsed: any): AIAnalysisResult {
   if (!parsed || typeof parsed !== 'object') {
     throw new Error('Gemini response is empty or not an object.');
@@ -182,32 +225,44 @@ Generate structured JSON matching the defined schema:
 `;
 
   try {
-    let ai;
-    let model;
+    let responseText: string | null = null;
 
-    try {
-      ai = getAI(app, { backend: new GoogleAIBackend() });
-      model = getGenerativeModel(ai, {
-        model: 'gemini-3.6-flash',
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: returnAnalysisSchema,
-        },
-      });
-    } catch (e) {
-      console.warn('Fallback initializing gemini-3.6-flash structured schema:', e);
-      ai = getAI(app);
-      model = getGenerativeModel(ai, {
-        model: 'gemini-3.6-flash',
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: returnAnalysisSchema,
-        },
-      });
+    if (GEMINI_API_KEY) {
+      try {
+        responseText = await generateContentWithGeminiKey(prompt);
+      } catch (geminiErr) {
+        console.warn('Direct Gemini API key call failed, trying Firebase AI fallback:', geminiErr);
+      }
     }
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    if (!responseText) {
+      let ai;
+      let model;
+
+      try {
+        ai = getAI(app, { backend: new GoogleAIBackend() });
+        model = getGenerativeModel(ai, {
+          model: 'gemini-3.6-flash',
+          generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: returnAnalysisSchema,
+          },
+        });
+      } catch (e) {
+        console.warn('Fallback initializing gemini-3.6-flash structured schema:', e);
+        ai = getAI(app);
+        model = getGenerativeModel(ai, {
+          model: 'gemini-3.6-flash',
+          generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: returnAnalysisSchema,
+          },
+        });
+      }
+
+      const result = await model.generateContent(prompt);
+      responseText = result.response.text();
+    }
 
     if (!responseText) {
       throw new Error('Gemini API returned an empty response.');
@@ -278,32 +333,44 @@ Return structured JSON matching the defined schema:
 `;
 
   try {
-    let ai;
-    let model;
+    let responseText: string | null = null;
 
-    try {
-      ai = getAI(app, { backend: new GoogleAIBackend() });
-      model = getGenerativeModel(ai, {
-        model: 'gemini-3.6-flash',
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: productInsightSchema,
-        },
-      });
-    } catch (e) {
-      console.warn('Fallback initializing productInsightSchema with gemini-3.6-flash:', e);
-      ai = getAI(app);
-      model = getGenerativeModel(ai, {
-        model: 'gemini-3.6-flash',
-        generationConfig: {
-          responseMimeType: 'application/json',
-          responseSchema: productInsightSchema,
-        },
-      });
+    if (GEMINI_API_KEY) {
+      try {
+        responseText = await generateContentWithGeminiKey(prompt);
+      } catch (geminiErr) {
+        console.warn('Direct Gemini API key call failed for insights, trying Firebase AI fallback:', geminiErr);
+      }
     }
 
-    const result = await model.generateContent(prompt);
-    const responseText = result.response.text();
+    if (!responseText) {
+      let ai;
+      let model;
+
+      try {
+        ai = getAI(app, { backend: new GoogleAIBackend() });
+        model = getGenerativeModel(ai, {
+          model: 'gemini-3.6-flash',
+          generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: productInsightSchema,
+          },
+        });
+      } catch (e) {
+        console.warn('Fallback initializing productInsightSchema with gemini-3.6-flash:', e);
+        ai = getAI(app);
+        model = getGenerativeModel(ai, {
+          model: 'gemini-3.6-flash',
+          generationConfig: {
+            responseMimeType: 'application/json',
+            responseSchema: productInsightSchema,
+          },
+        });
+      }
+
+      const result = await model.generateContent(prompt);
+      responseText = result.response.text();
+    }
 
     if (!responseText) {
       throw new Error('Gemini API returned an empty response for product insights.');

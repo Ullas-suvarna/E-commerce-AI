@@ -1,9 +1,12 @@
 'use client';
 
 import React, { useState, useMemo } from 'react';
+import Link from 'next/link';
 import { AppLayout } from '@/components/layout/AppLayout';
 import { useData } from '@/context/DataContext';
+import { useAuth } from '@/context/AuthContext';
 import { generateProductInsights, ProductInsightResult } from '@/services/aiService';
+import { sendHighRiskEmailAlert } from '@/services/emailService';
 import {
   Sparkles,
   Package,
@@ -22,13 +25,15 @@ import {
 import { EmptyState, CardSkeleton } from '@/components/ui/StateViews';
 
 export default function AiInsightsPage() {
-  const { returns, isLoading, updateReturnRecord, showToast } = useData();
+  const { returns, products, isLoading, updateReturnRecord, showToast } = useData();
+  const { user } = useAuth();
 
   // Aggregate product list with pre-calculated statistics
   const productList = useMemo(() => {
     const map: Record<
       string,
       {
+        key: string;
         sku: string;
         productName: string;
         category: string;
@@ -40,11 +45,14 @@ export default function AiInsightsPage() {
     > = {};
 
     returns.forEach((r) => {
-      const key = r.sku || r.productName;
+      const prodName = (r.productName || '').trim();
+      const prodSku = (r.sku || '').trim();
+      const key = (prodName || prodSku || 'Unknown Product').toLowerCase();
       if (!map[key]) {
         map[key] = {
-          sku: r.sku,
-          productName: r.productName || r.sku,
+          key,
+          sku: prodSku || 'SKU-GEN',
+          productName: prodName || prodSku || 'Unknown Product',
           category: r.category || 'General',
           totalReturnCount: 0,
           reasonCounts: {},
@@ -80,14 +88,14 @@ export default function AiInsightsPage() {
   }, [returns]);
 
   // Selected Product State
-  const [selectedSku, setSelectedSku] = useState<string>(productList[0]?.sku || '');
+  const [selectedProductKey, setSelectedProductKey] = useState<string>(productList[0]?.key || '');
   const [aiState, setAiState] = useState<'idle' | 'loading' | 'success' | 'error'>('idle');
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [insightResult, setInsightResult] = useState<ProductInsightResult | null>(null);
 
   const currentProduct = useMemo(() => {
-    return productList.find((p) => p.sku === selectedSku) || productList[0];
-  }, [productList, selectedSku]);
+    return productList.find((p) => p.key === selectedProductKey) || productList[0];
+  }, [productList, selectedProductKey]);
 
   const handleGenerateInsights = async () => {
     if (!currentProduct) return;
@@ -111,9 +119,12 @@ export default function AiInsightsPage() {
       setAiState('success');
 
       // Update matching return records for this product so their status becomes 'Analyzed'
-      const matchingReturns = returns.filter(
-        (r) => r.sku === currentProduct.sku || r.productName === currentProduct.productName
-      );
+      const matchingReturns = returns.filter((r) => {
+        const prodName = (r.productName || '').trim();
+        const prodSku = (r.sku || '').trim();
+        const key = (prodName || prodSku || 'Unknown Product').toLowerCase();
+        return key === currentProduct.key;
+      });
 
       const targetSeverity =
         result.priority === 'high'
@@ -142,6 +153,61 @@ export default function AiInsightsPage() {
         'Product Analyzed',
         `Analyzed ${currentProduct.productName}. Updated ${matchingReturns.length} return records to status "Analyzed".`
       );
+
+      // Trigger automatic high-risk email alert if priority is high
+      if (result.priority === 'high') {
+        const toEmail = user?.email || 'store@returniq.ai';
+        const toName = user?.displayName || user?.storeName || 'Store Manager';
+
+        const matchedProduct = products?.find(
+          (p) =>
+            (currentProduct.sku && p.sku.toLowerCase() === currentProduct.sku.toLowerCase()) ||
+            p.name.toLowerCase() === currentProduct.productName.toLowerCase()
+        );
+
+        const returnRate = matchedProduct?.returnRate
+          ? `${matchedProduct.returnRate}%`
+          : returns.length > 0
+          ? `${Math.round((currentProduct.totalReturnCount / returns.length) * 100)}%`
+          : '0%';
+
+        try {
+          const emailRes = await sendHighRiskEmailAlert({
+            to_email: toEmail,
+            to_name: toName,
+            risk_level: 'HIGH RISK',
+            product_name: currentProduct.productName,
+            category: currentProduct.category,
+            return_rate: returnRate,
+            main_problem: result.mainRecurringProblem,
+            ground_truth_evidence: result.evidence,
+            recommended_action: result.recommendedBusinessAction,
+          });
+
+          if (emailRes.success) {
+            if (!emailRes.duplicate) {
+              showToast(
+                'success',
+                'High-Risk Alert Dispatched',
+                `Automated email alert sent to registered store email (${toEmail}).`
+              );
+            }
+          } else {
+            showToast(
+              'error',
+              'Email Alert Failed',
+              `Email alert failed: ${emailRes.message}`
+            );
+          }
+        } catch (emailErr: any) {
+          console.error('High risk email alert dispatch error:', emailErr);
+          showToast(
+            'error',
+            'Email Alert Failed',
+            emailErr?.message || 'Failed to dispatch high-risk email alert.'
+          );
+        }
+      }
     } catch (err: any) {
       console.error('generateProductInsights UI Error:', err);
       setAiState('error');
@@ -168,6 +234,27 @@ export default function AiInsightsPage() {
           </div>
         </div>
 
+        {/* Multi-Product Batch Audit Banner */}
+        <div className="p-4 sm:p-5 rounded-3xl bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 text-white border border-indigo-500/30 flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
+          <div className="flex items-center space-x-3.5">
+            <div className="w-10 h-10 rounded-2xl bg-indigo-600/30 border border-indigo-400/30 flex items-center justify-center text-indigo-300 shrink-0">
+              <Sparkles className="w-5 h-5 text-indigo-300" />
+            </div>
+            <div>
+              <h4 className="text-sm sm:text-base font-black">Audit All Products in a Single Click</h4>
+              <p className="text-xs text-slate-300 font-medium">
+                Run batch AI analysis across all distinct products and download a comprehensive multi-page executive PDF report.
+              </p>
+            </div>
+          </div>
+          <Link
+            href="/reports"
+            className="px-5 py-2.5 rounded-xl bg-indigo-600 hover:bg-indigo-500 text-white font-extrabold text-xs sm:text-sm transition shrink-0 shadow-md flex items-center justify-center"
+          >
+            Open AI Report Center →
+          </Link>
+        </div>
+
         {/* Product Selector Bar */}
         <div className="glass-panel p-6 rounded-3xl border border-slate-400 space-y-4 shadow-sm">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
@@ -181,16 +268,16 @@ export default function AiInsightsPage() {
             {/* Product Selector Dropdown */}
             <div className="w-full md:w-[420px]">
               <select
-                value={selectedSku}
+                value={currentProduct?.key || ''}
                 onChange={(e) => {
-                  setSelectedSku(e.target.value);
+                  setSelectedProductKey(e.target.value);
                   setAiState('idle');
                   setInsightResult(null);
                 }}
                 className="w-full bg-white border border-slate-400 text-slate-900 rounded-2xl px-4 py-3 text-sm focus:outline-none focus:border-indigo-600 cursor-pointer font-bold shadow-sm"
               >
                 {productList.map((p) => (
-                  <option key={p.sku} value={p.sku}>
+                  <option key={p.key} value={p.key}>
                     {p.productName} ({p.sku}) — {p.totalReturnCount} returns
                   </option>
                 ))}
